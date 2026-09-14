@@ -42,13 +42,13 @@ export default function Login({ onLogin }) {
           <p className="eyebrow">WELCOME TO FOODBRIDGE</p>
           <h1>Choose how you want to help.</h1>
           <p>
-            Evaluation-I uses browser storage to remember your demo account and
-            keep provider and NGO actions separate.
+            {/* Evaluation-I uses browser storage to remember your demo account and
+            keep provider and NGO actions separate. */}
           </p>
           <div className="auth-note">
-            <span>🔒</span>
+            {/* <span>🔒</span> */}
             <span>
-              Your demo account stays in this browser. Log out to switch roles.
+              {/* Your demo account stays in this browser. Log out to switch roles. */}
             </span>
           </div>
         </div>
