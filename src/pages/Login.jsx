@@ -55,7 +55,7 @@ export default function Login({ onLogin }) {
 
         <form className="auth-card" onSubmit={handleSubmit}>
           <div className="auth-card-header">
-            <p className="eyebrow">DEMO LOGIN</p>
+            {/* <p className="eyebrow">DEMO LOGIN</p> */}
             <h2>Continue as</h2>
           </div>
           <div className="role-options">
@@ -99,15 +99,15 @@ export default function Login({ onLogin }) {
             />
           </label>
           <p className="form-helper">
-            Try <strong>Hope Shelter</strong> for the NGO demo or{" "}
+            {/* Try <strong>Hope Shelter</strong> for the NGO demo or{" "}
             <strong>Green Leaf Bakery</strong> for the provider demo so the
-            sample records appear under that account.
+            sample records appear under that account. */}
           </p>
           <button className="button button-primary button-full" type="submit">
             Continue as {role === "ngo" ? "NGO" : "Provider"} →
           </button>
           <p className="form-note">
-            No real authentication is used in this Evaluation-I frontend.
+            {/* No real authentication is used in this Evaluation-I frontend. */}
           </p>
         </form>
       </div>
