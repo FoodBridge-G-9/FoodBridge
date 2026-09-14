@@ -35,8 +35,6 @@ export default function FoodDetails({ session }) {
         )
       : null;
 
-  const isClaimed = donation.status === "Claimed";
-
   const providerRequestCount = requests.filter(
     (request) => request.donationId === donation.id,
   ).length;
@@ -60,7 +58,6 @@ export default function FoodDetails({ session }) {
     }
 
     if (
-      isClaimed ||
       currentRequest?.status === "Requested" ||
       currentRequest?.status === "Accepted"
     )
@@ -156,10 +153,6 @@ export default function FoodDetails({ session }) {
             ) : currentRequest?.status === "Requested" ? (
               <div className="success-box">
                 ✓ Your request is recorded and waiting for the provider.
-              </div>
-            ) : isClaimed ? (
-              <div className="info-box">
-                This donation has already been claimed by another NGO.
               </div>
             ) : (
               <button

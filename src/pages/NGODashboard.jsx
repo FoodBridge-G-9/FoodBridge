@@ -10,10 +10,9 @@ const STATUS_LABELS = {
   Requested: "Requested",
   Accepted: "Accepted",
   Declined: "Declined",
-  Closed: "Claimed by another org",
 };
 
-const STATUS_FILTERS = ["All", "Requested", "Accepted", "Declined", "Closed"];
+const STATUS_FILTERS = ["All", "Requested", "Accepted", "Declined"];
 
 export default function NGODashboard({ session }) {
   const [donations] = useLocalStorage(STORAGE_KEYS.donations, initialDonations);
@@ -35,9 +34,7 @@ export default function NGODashboard({ session }) {
     () => new Set(myRequests.map((request) => request.donationId)),
     [myRequests],
   );
-  const availableDonations = donations.filter(
-    (donation) => donation.status === "Available",
-  );
+  const availableDonations = donations;
 
   return (
     <section className="dashboard-section">
@@ -108,11 +105,6 @@ export default function NGODashboard({ session }) {
                   <div>
                     <strong>{request.donationName}</strong>
                     <small>From {request.providerName}</small>
-                    {request.status === "Closed" && (
-                      <small className="muted-text">
-                        Another organization's request was accepted first.
-                      </small>
-                    )}
                   </div>
                   <span
                     className={`status-pill status-${request.status.toLowerCase()}`}

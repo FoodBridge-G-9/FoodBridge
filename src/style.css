@@ -1261,8 +1261,7 @@ button:disabled {
   background: #e8f7ed;
   color: #19663b;
 }
-.status-declined,
-.status-closed {
+.status-declined {
   background: #f6eaea;
   color: #8a3434;
 }

@@ -2,8 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 export default function FoodCard({ donation }) {
-  const isClaimed = donation.status === "Claimed";
-
   return (
     <article className="food-card">
       <div className="food-card-visual" aria-hidden="true">
@@ -12,9 +10,7 @@ export default function FoodCard({ donation }) {
       <div className="food-card-body">
         <div className="food-card-topline">
           <span className="tag">{donation.category}</span>
-          <span className={`availability-dot ${isClaimed ? "claimed" : ""}`}>
-            {isClaimed ? "Claimed" : "Available"}
-          </span>
+          <span className="availability-dot">Available</span>
         </div>
         <h3>{donation.foodName}</h3>
         <p className="food-provider">{donation.provider}</p>
