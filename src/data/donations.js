@@ -120,9 +120,8 @@ export const initialDonations = [
     providerId: "sweet-crumbs-bakery",
     location: "Sector 10",
     pickupDeadline: "Today, 7:00 PM",
-    description:
-      "A mixed box of cupcakes already claimed by a partner NGO — shown here to demonstrate the claimed state.",
-    status: "Claimed",
+    description: "A mixed box of cupcakes.",
+    status: "Available",
     accent: "🧁",
   },
 ];
