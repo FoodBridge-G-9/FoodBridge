@@ -58,15 +58,7 @@ export default function Navbar({ session, onLogout }) {
           >
             Find Food
           </NavLink>
-          {session ? (
-            <>
-              <NavLink
-                to={dashboardPath}
-                onClick={closeMenu}
-                className={({ isActive }) => (isActive ? "active" : "")}
-              >
-                Dashboard
-              </NavLink>
+          {session && (
               <button
                 className="nav-logout"
                 type="button"
@@ -74,22 +66,19 @@ export default function Navbar({ session, onLogout }) {
               >
                 Log out
               </button>
-            </>
-          ) : (
-            <Link className="nav-login" to="/login" onClick={closeMenu}>
-              Log in
-            </Link>
-          )}
+              )}
         </nav>
-        <div className="desktop-nav-action">
+        
+        <div className = "desktop-nav-action">
           {session ? (
             <Button to={dashboardPath} variant="secondary">
               Open Dashboard
             </Button>
-          ) : (
+           ) : (
             <Button to="/login">Get Started</Button>
-          )}
-        </div>
+           )
+          }
+          </div>
       </div>
     </header>
   );

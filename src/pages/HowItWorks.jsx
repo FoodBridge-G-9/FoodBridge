@@ -87,7 +87,7 @@ export default function HowItWorks() {
         </div>
       </section>
 
-      <section className="section">
+      {/* <section className="section">
         <div className="container narrow centered-copy">
           <p className="eyebrow">OUR EVALUATION-I FOCUS</p>
           <h2>A clear frontend workflow before advanced backend features.</h2>
@@ -98,7 +98,7 @@ export default function HowItWorks() {
             integration and CRUD can be added in later evaluations.
           </p>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }
