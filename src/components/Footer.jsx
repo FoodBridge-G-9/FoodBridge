@@ -12,16 +12,17 @@ export default function Footer() {
           </p>
         </div>
         <div>
+          
+        </div>
+        <div>
+          {/* <p className="footer-title">Built for FEE-II</p>
+          <p className="footer-small">
+            React · CSS3 · JavaScript · React Router
+          </p> */}
           <p className="footer-title">FoodBridge</p>
           <a href="/how-it-works">How It Works</a>
           <a href="/food">Find Food</a>
           <a href="/login">Get Started</a>
-        </div>
-        <div>
-          <p className="footer-title">Built for FEE-II</p>
-          <p className="footer-small">
-            React · CSS3 · JavaScript · React Router
-          </p>
         </div>
       </div>
       <div className="container footer-bottom">
