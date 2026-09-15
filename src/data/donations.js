@@ -38,8 +38,8 @@ export const initialDonations = [
     quantity: 28,
     unit: "packs",
     foodType: "Vegetarian",
-    provider: "Daily Crust",
-    providerId: "daily-crust",
+    provider: "Green Leaf Bakery",
+    providerId: "green-leaf-bakery",
     location: "Sector 22",
     pickupDeadline: "Tomorrow, 8:00 AM",
     description:
