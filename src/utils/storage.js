@@ -1,7 +1,7 @@
 export const STORAGE_KEYS = {
-  session: "foodbridge-session-v2",
-  donations: "foodbridge-donations-v2",
-  requests: "foodbridge-requests-v2",
+  session: "foodbridge-session",
+  donations: "foodbridge-donations",
+  requests: "foodbridge-requests",
 };
 
 export function makeUserId(name) {
