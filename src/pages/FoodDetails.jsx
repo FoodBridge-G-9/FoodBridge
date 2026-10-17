@@ -4,8 +4,9 @@ import FoodCard from "../components/FoodCard";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { initialDonations } from "../data/donations";
 import { STORAGE_KEYS } from "../utils/storage";
-
-export default function FoodDetails({ session }) {
+import { useSessionContext } from "../context/SessionContext";
+export default function FoodDetails() {
+  const{session}=useSessionContext();
   const { id } = useParams();
   const navigate = useNavigate();
   const [donations] = useLocalStorage(STORAGE_KEYS.donations, initialDonations);

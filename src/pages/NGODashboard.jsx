@@ -2,10 +2,10 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
 import FoodCard from "../components/FoodCard";
-import { useLocalStorage } from "../hooks/useLocalStorage";
-import { initialDonations } from "../data/donations";
+import { useSelector } from "react-redux";
 import { STORAGE_KEYS } from "../utils/storage";
-
+import { useSessionContext } from "../context/SessionContext";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 const STATUS_LABELS = {
   Requested: "Requested",
   Accepted: "Accepted",
@@ -14,8 +14,11 @@ const STATUS_LABELS = {
 
 const STATUS_FILTERS = ["All", "Requested", "Accepted", "Declined"];
 
-export default function NGODashboard({ session }) {
-  const [donations] = useLocalStorage(STORAGE_KEYS.donations, initialDonations);
+export default function NGODashboard() {
+  const{session}=useSessionContext();
+  const donations = useSelector(
+  (state) => state.donations.items
+);
   const [requests] = useLocalStorage(STORAGE_KEYS.requests, []);
   const [statusFilter, setStatusFilter] = useState("All");
 

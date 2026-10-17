@@ -1636,3 +1636,232 @@ button:disabled {
     width: 100%;
   }
 }
+
+/* Restaurant licence verification screen */
+
+/* ===== FoodBridge Verification Page ===== */
+
+.verification-section {
+  min-height: calc(100vh - 76px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: #ffffff;
+  font-family: Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+.verification-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 32px;
+  border: 1px solid #393939;
+  border-radius: 18px;
+  background: #242424;
+  color: #ffffff;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+}
+
+.verification-card .brand-label {
+  margin: 0 0 12px;
+  color: #ffad62;
+  font-weight: 800;
+  letter-spacing: 2px;
+  font-size: 13px;
+}
+
+.verification-card h2 {
+  margin: 0 0 18px;
+  color: #ffffff;
+  font-size: 27px;
+}
+
+.verification-card p {
+  color: #c2c2c2;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.verification-card p strong {
+  color: #ffffff;
+}
+
+.verification-label {
+  display: block;
+  margin: 20px 0 9px;
+  color: #f2f2f2;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.verification-input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 46px;
+  padding: 12px;
+  border: 1px solid #505050;
+  border-radius: 9px;
+  background: #303030;
+  color: #ffffff;
+  font-size: 14px;
+  outline: none;
+}
+
+.verification-input:focus {
+  border-color: #2c755d;
+  box-shadow: 0 0 0 3px rgba(44, 117, 93, 0.2);
+}
+
+.verification-input[type="file"] {
+  height: auto;
+  padding: 10px;
+  color: #c2c2c2;
+}
+
+.verification-card .form-hint {
+  margin: 8px 0 16px;
+  color: #999999;
+  font-size: 12px;
+}
+
+.verification-card .form-success {
+  padding: 12px;
+  border: 1px solid #426b4b;
+  border-radius: 9px;
+  background: #263b2c;
+  color: #b8f0c4;
+  font-size: 13px;
+}
+
+.verification-card .form-error,
+.verification-card [role="alert"] {
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: #492b2b;
+  color: #ffc2b8;
+  font-size: 13px;
+}
+
+/* Green primary button */
+.verification-card .verification-button.button-primary {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 14px;
+  border: 1px solid #103f32;
+  border-radius: 9px;
+  background: #103f32;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.verification-card .verification-button.button-primary:hover {
+  background: #165441;
+}
+
+/* Secondary button */
+.verification-card .verification-button.button-outline {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 12px;
+  border: 1px solid #2c755d;
+  border-radius: 9px;
+  background: transparent;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.verification-card .verification-button.button-outline:hover {
+  background: #303b36;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .verification-section {
+    padding: 24px 14px;
+  }
+
+  .verification-card {
+    padding: 24px 18px;
+  }
+}
+/* Verification page background */
+.verification-section {
+  background: #f8f7f2;
+  color: #111111;
+}
+
+/* White verification card */
+.verification-card {
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+}
+
+/* Headings */
+.verification-card h2 {
+  color: #111111;
+}
+
+/* Description text */
+.verification-card p {
+  color: #64748b;
+}
+
+/* Labels */
+.verification-label {
+  color: #263238;
+}
+
+/* Inputs */
+.verification-input {
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid #dfe5e1;
+}
+
+.verification-input::placeholder {
+  color: #94a3b8;
+}
+
+/* Green primary button */
+.verification-card .verification-button.button-primary {
+  background: #103f32;
+  border-color: #103f32;
+  color: #ffffff;
+}
+
+.verification-card .verification-button.button-primary:hover {
+  background: #165441;
+}
+
+/* Secondary button */
+.verification-card .verification-button.button-outline {
+  background: #ffffff;
+  border-color: #b7d8c8;
+  color: #103f32;
+}
+
+.verification-card .verification-button.button-outline:hover {
+  background: #f0f8f3;
+}
+.verification-card .brand-label {
+  color: #103f32;
+}
+/* Make restaurant name visible on the verification page */
+.verification-card p,
+.verification-card p strong {
+  color: #263238 !important;
+}
+
+.verification-card h2 {
+  color: #111111 !important;
+}

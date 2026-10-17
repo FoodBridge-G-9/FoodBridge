@@ -4,7 +4,9 @@ import { Link } from "react-router-dom";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { initialDonations } from "../data/donations";
 import { STORAGE_KEYS } from "../utils/storage";
-
+import { useSessionContext } from "../context/SessionContext";
+import { useDispatch, useSelector } from "react-redux";
+import { addDonation, updateDonation } from "../features/donations/donationsSlice";
 const emptyForm = {
   foodName: "",
   category: "Cooked Meals",
@@ -16,11 +18,12 @@ const emptyForm = {
   description: "",
 };
 
-export default function ProviderDashboard({ session }) {
-  const [donations, setDonations] = useLocalStorage(
-    STORAGE_KEYS.donations,
-    initialDonations,
-  );
+export default function ProviderDashboard() {
+  const{session}=useSessionContext();
+  const dispatch = useDispatch();
+const donations = useSelector(
+  (state) => state.donations.items
+);
   const [requests, setRequests] = useLocalStorage(STORAGE_KEYS.requests, []);
   const [form, setForm] = useState(emptyForm);
   const [message, setMessage] = useState("");
@@ -70,7 +73,7 @@ export default function ProviderDashboard({ session }) {
       status: "Available",
       accent: "🍲",
     };
-    setDonations((current) => [newDonation, ...current]);
+    dispatch(addDonation(newDonation));
     setForm(emptyForm);
     setMessage("Donation published successfully. It is now visible to NGOs.");
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -95,13 +98,12 @@ export default function ProviderDashboard({ session }) {
     );
 
     if (status === "Accepted") {
-      setDonations((current) =>
-        current.map((donation) =>
-          donation.id === target.donationId
-            ? { ...donation, status: "Claimed" }
-            : donation,
-        ),
-      );
+      dispatch(
+    updateDonation({
+      id: target.donationId,
+      status: "Claimed",
+    })
+  );
     }
   };
 

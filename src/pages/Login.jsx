@@ -2,16 +2,20 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { demoNGOs } from "../data/donations";
 import { makeUserId } from "../utils/storage";
-
+import RestaurantSearch from "../components/RestaurantSearch";
 const AUTH_KEY = "foodbridge-users-v1";
 
 export default function Login({ onLogin }) {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const [providerReadyForSignup, setProviderReadyForSignup] = useState(false);
   const [mode, setMode] = useState("login");
   const [role, setRole] = useState("ngo");
-
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [licenseFile, setLicenseFile] = useState(null);
+  const [uploadError, setUploadError] = useState("");
+  const [fssaiNumber, setFssaiNumber] = useState("");
+  const [verificationStatus, setVerificationStatus] = useState("idle");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,26 +38,31 @@ export default function Login({ onLogin }) {
     localStorage.setItem(AUTH_KEY, JSON.stringify(users));
   };
 
-  const getAccountDetails = (accountName) => {
-    const trimmedName = accountName.trim();
+  
+const getAccountDetails = (accountName) => {
+  const trimmedName = accountName.trim();
 
-    const defaultName =
-      role === "ngo" ? "Hope Shelter" : "Green Leaf Bakery";
+  const defaultName =
+    role === "ngo" ? "Hope Shelter" : "Green Leaf Bakery";
 
-    const finalName = trimmedName || defaultName;
-    const normalized = finalName.toLowerCase();
+  const finalName =
+    role === "provider" && selectedRestaurant
+      ? selectedRestaurant.name
+      : trimmedName || defaultName;
 
-    const knownNGO = demoNGOs.find(
-      (ngo) => ngo.name.toLowerCase() === normalized,
-    );
+  const normalized = finalName.toLowerCase();
 
-    const id = knownNGO?.id?.toString() || makeUserId(finalName);
+  const knownNGO = demoNGOs.find(
+    (ngo) => ngo.name.toLowerCase() === normalized,
+  );
 
-    return {
-      id,
-      name: finalName,
-    };
+  const id = knownNGO?.id?.toString() || makeUserId(finalName);
+
+  return {
+    id,
+    name: finalName,
   };
+};
 
   const goToDashboard = (account) => {
     onLogin({
@@ -71,42 +80,54 @@ export default function Login({ onLogin }) {
     );
   };
 
-  const handleLogin = (event) => {
-    event.preventDefault();
+  
+const handleLogin = (event) => {
+  event.preventDefault();
 
-    setError("");
-    setMessage("");
+  setError("");
+  setMessage("");
 
-    if (!email.trim() || !password) {
-      setError("Please enter your email and password.");
-      return;
-    }
+  if (!email.trim() || !password) {
+    setError("Please enter your email and password.");
+    return;
+  }
 
-    const users = getUsers();
+  const users = getUsers();
 
-    const user = users.find(
-      (item) =>
-        item.email.toLowerCase() === email.trim().toLowerCase() &&
-        item.password === password &&
-        item.role === role,
+  const user = users.find(
+    (item) =>
+      item.email.toLowerCase() === email.trim().toLowerCase() &&
+      item.password === password &&
+      item.role === role,
+  );
+
+  if (!user) {
+    setError(
+      "Account not found. Please check your details or sign up first.",
     );
+    return;
+  }
 
-    if (!user) {
-      setError(
-        "Account not found. Please check your details or sign up first.",
-      );
-      return;
-    }
+  if (
+    user.role === "provider" &&
+    user.licenseVerificationStatus !== "demo-verified"
+  ) {
+    setError("Please complete demo licence verification before logging in.");
+    return;
+  }
 
-    goToDashboard({
-      id: user.id,
-      name: user.name,
-    });
-  };
+  goToDashboard({
+    id: user.id,
+    name: user.name,
+  });
+};
 
   const handleSignup = (event) => {
     event.preventDefault();
-
+    if (role === "provider" && verificationStatus !== "verified") {
+        setError("Please complete demo licence verification before signing up.");
+        return;
+    }
     setError("");
     setMessage("");
 
@@ -145,6 +166,11 @@ export default function Login({ onLogin }) {
       email: email.trim(),
       password,
       role,
+       ...(role === "provider" && {
+    licenseVerificationStatus: "demo-verified",
+    fssaiNumber: fssaiNumber.trim(),
+    restaurantName: selectedRestaurant?.name || account.name,
+    }),
     };
 
     saveUsers([...users, newUser]);
@@ -153,14 +179,194 @@ export default function Login({ onLogin }) {
 
     goToDashboard(account);
   };
+  
+const existingVerifiedProvider =
+  selectedRestaurant &&
+  getUsers().some(
+    (user) =>
+      user.role === "provider" &&
+      (user.restaurantName || user.name).toLowerCase() ===
+        selectedRestaurant.name.toLowerCase() &&
+      user.licenseVerificationStatus === "demo-verified"
+  );
 
-  // const switchMode = () => {
-  //   setMode(mode === "login" ? "signup" : "login");
-  //   setError("");
-  //   setMessage("");
-  // };
-
+  if (role === "provider" && !selectedRestaurant) {
+    return (
+      <RestaurantSearch
+        onContinue={setSelectedRestaurant}
+        onRegisterNew={(name) => {
+          console.log("New restaurant:", name);
+        }}
+        onBack={() => {
+          setRole("ngo");
+          setSelectedRestaurant(null);
+        }}
+      />
+    );
+  }
+  // const isProviderVerified = verificationStatus === "verified";
+  // const [providerReadyForSignup, setProviderReadyForSignup] = useState(false);
+  if (role === "provider" && selectedRestaurant&& !providerReadyForSignup&& !(mode === "login" && existingVerifiedProvider)) {
   return (
+    <section className="auth-section verification-section">
+      <div className="auth-card verification-card">
+        <p className="brand-label">FOODBRIDGE</p>
+
+        <h2>Verify your restaurant</h2>
+       <p>
+  Selected restaurant:{" "}
+  <strong>
+    {selectedRestaurant?.name ||
+      selectedRestaurant?.restaurantName ||
+      selectedRestaurant?.label ||
+      "Restaurant name unavailable"}
+  </strong>
+</p>
+
+{selectedRestaurant?.location && (
+  <p>{selectedRestaurant.location}</p>
+)}
+
+        <label htmlFor="license-upload"
+        className="verification-label">
+          Upload FSSAI licence (PDF, JPG or PNG)
+        </label>
+
+        <input
+          id="license-upload"
+          className="verification-input"
+          type="file"
+          accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+          onChange={(e) => {
+            setLicenseFile(e.target.files?.[0] || null);
+            setUploadError("");
+          }}
+        />
+        
+        <label htmlFor="fssai-number"
+        className="verification-label">
+
+            Demo FSSAI Licence Number
+        </label>
+
+        <input
+          id="fssai-number"
+          className="verification-input"
+          type="text"
+          value={fssaiNumber}
+          onChange={(e) => {
+            setFssaiNumber(e.target.value);
+            setUploadError("");
+            setMessage("");
+            setVerificationStatus("idle");
+          }}
+          placeholder="Enter DEMO123456"
+        />
+
+        <p className="form-hint">
+          Demo only: use DEMO123456 to test the successful path.
+          This is not a real licence number.
+        </p>
+
+        {licenseFile && (
+          <p>Selected file: {licenseFile.name}</p>
+        )}
+
+        {uploadError && (
+          <p role="alert">{uploadError}</p>
+        )}
+        
+{verificationStatus === "verified" && (
+  <p className="form-success" role="status">
+    Demo verification successful! This does not confirm a genuine FSSAI licence.
+  </p>
+)}
+
+{verificationStatus === "rejected" && (
+  <p className="form-error" role="alert">
+    Demo verification failed. Please check the sample number.
+  </p>
+)}
+
+<button
+  className="button button-primary button-full verification-button"
+  type="button"
+  onClick={() => {
+    setUploadError("");
+    setMessage("");
+
+    if (!licenseFile) {
+      setUploadError("Please select your licence file.");
+      setVerificationStatus("idle");
+      return;
+    }
+
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+    ];
+
+    if (!allowedTypes.includes(licenseFile.type)) {
+      setUploadError("Please upload a PDF, JPG or PNG file.");
+      setVerificationStatus("rejected");
+      return;
+    }
+
+    if (!fssaiNumber.trim()) {
+      setUploadError("Please enter a demo FSSAI licence number.");
+      setVerificationStatus("idle");
+      return;
+    }
+
+    // DEMO ONLY: this is not official FSSAI verification.
+    if (fssaiNumber.trim() === "DEMO123456") {
+      setVerificationStatus("verified");
+      setUploadError("");
+      setMessage("Demo verification successful. This does not confirm a real licence.");
+    } else {
+      setVerificationStatus("rejected");
+      setUploadError("Demo verification failed. Try the sample number shown below.");
+    }
+  }}
+>
+  Verify License (Demo)
+</button>
+        
+{verificationStatus === "verified" && (
+  <button
+    type="button"
+    onClick={() => {
+    setName(selectedRestaurant.name);
+    setProviderReadyForSignup(true);
+    setMode("signup");
+    setError("");
+    setMessage("");
+}}
+  >
+    Continue to signup
+  </button>
+)}
+
+        <button
+          type="button"
+          className="button button-outline button-full verification-button"
+          onClick={() => {
+            setSelectedRestaurant(null);
+            setLicenseFile(null);
+            setUploadError("");
+            setFssaiNumber("");
+            setVerificationStatus("idle");
+            setProviderReadyForSignup(false);
+          }}
+        >
+          Back to restaurant search
+        </button>
+      </div>
+    </section>
+  );
+}
+  return (  
     <section className="auth-section">
       <div className="container auth-layout">
         <div className="auth-intro">
@@ -279,6 +485,7 @@ export default function Login({ onLogin }) {
                     ? "e.g. Hope Shelter"
                     : "e.g. Green Leaf Bakery"
                 }
+                readOnly={role === "provider" && !!selectedRestaurant}    
               />
             </label>
           )}

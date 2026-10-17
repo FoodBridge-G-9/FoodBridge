@@ -2,10 +2,7 @@ import React from "react";
 import { useMemo, useState } from "react";
 import FoodCard from "../components/FoodCard";
 import SectionHeading from "../components/SectionHeading";
-import { useLocalStorage } from "../hooks/useLocalStorage";
-import { initialDonations } from "../data/donations";
-import { STORAGE_KEYS } from "../utils/storage";
-
+import { useSelector } from "react-redux";
 const SORT_OPTIONS = [
   { value: "default", label: "Sort: Newest first" },
   { value: "quantity-desc", label: "Sort: Most quantity" },
@@ -13,9 +10,8 @@ const SORT_OPTIONS = [
 ];
 
 export default function FoodList() {
-  const [savedDonations] = useLocalStorage(
-    STORAGE_KEYS.donations,
-    initialDonations,
+  const savedDonations = useSelector(
+  (state) => state.donations.items
   );
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");

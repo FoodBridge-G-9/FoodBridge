@@ -1,0 +1,314 @@
+
+.restaurant-search-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #171717;
+  font-family: Arial, sans-serif;
+}
+
+.restaurant-search-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 32px;
+  border-radius: 18px;
+  background: #242424;
+  color: #ffffff;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+}
+
+.brand-label {
+  color: #ffad62;
+  font-weight: 800;
+  letter-spacing: 2px;
+  font-size: 13px;
+}
+
+.restaurant-search-card h2 {
+  margin-bottom: 10px;
+  font-size: 27px;
+}
+
+.search-description {
+  color: #bdbdbd;
+  line-height: 1.5;
+  font-size: 14px;
+  margin-bottom: 25px;
+}
+
+.restaurant-search-card label {
+  display: block;
+  margin-bottom: 9px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.restaurant-search-card input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #555;
+  border-radius: 9px;
+  background: #303030;
+  color: white;
+  font-size: 14px;
+  outline: none;
+}
+
+.restaurant-search-card input:focus {
+  border-color: #ffad62;
+}
+
+.restaurant-results {
+  margin-top: 8px;
+  border: 1px solid #454545;
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.restaurant-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  width: 100%;
+  padding: 13px;
+  background: #303030;
+  border: none;
+  border-bottom: 1px solid #454545;
+  color: white;
+  cursor: pointer;
+  text-align: left;
+}
+
+.restaurant-option:last-child {
+  border-bottom: none;
+}
+
+.restaurant-option:hover {
+  background: #3d342d;
+}
+
+.restaurant-name {
+  font-weight: 600;
+}
+
+.restaurant-location {
+  font-size: 12px;
+  color: #c2c2c2;
+}
+
+.no-results {
+  padding: 12px;
+  color: #ffc58f;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.selected-restaurant {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 16px;
+  padding: 14px;
+  background: #303b30;
+  border: 1px solid #526b50;
+  border-radius: 9px;
+}
+
+.selected-restaurant p,
+.selected-restaurant span {
+  margin: 0;
+  color: #c9d8c6;
+  font-size: 12px;
+}
+
+.selected-restaurant strong {
+  font-size: 15px;
+}
+
+.continue-button {
+  width: 100%;
+  padding: 13px;
+  margin-top: 20px;
+  border: none;
+  border-radius: 9px;
+  background: #ffad62;
+  color: #242424;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.continue-button:hover:not(:disabled) {
+  background: #ffbd80;
+}
+
+.continue-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.register-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  font-size: 13px;
+  color: #c2c2c2;
+}
+
+.register-link {
+  border: none;
+  background: none;
+  color: #ffad62;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.registration-notice {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #493b2d;
+  color: #ffdbb8;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.verification-note {
+  margin-top: 24px;
+  color: #999;
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+
+/* ===== FoodBridge Restaurant Search — Light Theme ===== */
+
+.restaurant-search-page {
+  background: #f8f7f2;
+  color: #111111;
+}
+
+.restaurant-search-card {
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+}
+
+.restaurant-search-card .brand-label {
+  color: #103f32;
+}
+
+.restaurant-search-card h2 {
+  color: #111111;
+}
+
+.restaurant-search-card p,
+.restaurant-search-card label,
+.restaurant-search-card span {
+  color: #475569;
+}
+
+.restaurant-search-card label {
+  font-weight: 600;
+}
+
+.restaurant-search-card input {
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid #dfe5e1;
+}
+
+.restaurant-search-card input::placeholder {
+  color: #94a3b8;
+}
+
+/* Restaurant search results */
+.restaurant-results {
+  background: #ffffff;
+  border: 1px solid #dfe5e1;
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.restaurant-search-card .restaurant-option {
+  background: #ffffff;
+  color: #111111;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.restaurant-search-card .restaurant-option:hover {
+  background: #f0f8f3;
+}
+
+.restaurant-search-card .restaurant-option .restaurant-name {
+  color: #103f32;
+  font-weight: 700;
+}
+
+.restaurant-search-card .restaurant-option .restaurant-location {
+  color: #64748b;
+}
+
+/* Selected restaurant */
+.restaurant-search-card .selected-restaurant {
+  background: #f0f8f3;
+  border: 1px solid #b7d8c8;
+  border-radius: 9px;
+}
+
+.restaurant-search-card .selected-restaurant p,
+.restaurant-search-card .selected-restaurant strong,
+.restaurant-search-card .selected-restaurant span {
+  color: #103f32;
+}
+
+/* Green Continue button */
+.restaurant-search-card .continue-button {
+  background: #103f32;
+  border: 1px solid #103f32;
+  color: #ffffff;
+}
+
+.restaurant-search-card .continue-button:hover:not(:disabled) {
+  background: #165441;
+}
+
+.restaurant-search-card .continue-button:disabled {
+  background: #d5e2dc;
+  border-color: #d5e2dc;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+/* Register link */
+.restaurant-search-card .register-link {
+  background: transparent;
+  color: #103f32;
+}
+
+.restaurant-search-card .register-link:hover {
+  color: #165441;
+  text-decoration: underline;
+}
+
+/* Supporting text */
+.restaurant-search-card .search-description,
+.restaurant-search-card .verification-note,
+.restaurant-search-card .register-prompt,
+.restaurant-search-card .no-results {
+  color: #64748b;
+}
+
+.restaurant-search-card .registration-notice {
+  background: #f0f8f3;
+  border: 1px solid #b7d8c8;
+  color: #103f32;
+}
