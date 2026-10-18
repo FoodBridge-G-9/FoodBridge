@@ -10,7 +10,11 @@ export default function FoodCard({ donation }) {
       <div className="food-card-body">
         <div className="food-card-topline">
           <span className="tag">{donation.category}</span>
-          <span className="availability-dot">Available</span>
+         <span className="availability-dot">
+  {donation.status === "Picked Up"
+    ? "Claimed"
+    : donation.status || "Available"}
+</span>
         </div>
         <h3>{donation.foodName}</h3>
         <p className="food-provider">{donation.provider}</p>

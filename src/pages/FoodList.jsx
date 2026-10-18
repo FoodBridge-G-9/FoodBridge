@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import FoodCard from "../components/FoodCard";
 import SectionHeading from "../components/SectionHeading";
 import { useSelector } from "react-redux";
+
 const SORT_OPTIONS = [
   { value: "default", label: "Sort: Newest first" },
   { value: "quantity-desc", label: "Sort: Most quantity" },

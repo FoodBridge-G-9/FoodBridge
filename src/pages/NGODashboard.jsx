@@ -7,9 +7,11 @@ import { STORAGE_KEYS } from "../utils/storage";
 import { useSessionContext } from "../context/SessionContext";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 const STATUS_LABELS = {
-  Requested: "Requested",
-  Accepted: "Accepted",
+   Requested: "Requested",
+  Accepted: "Claimed",
+  Claimed: "Claimed",
   Declined: "Declined",
+  Closed: "Closed",
 };
 
 const STATUS_FILTERS = ["All", "Requested", "Accepted", "Declined"];
@@ -37,7 +39,9 @@ export default function NGODashboard() {
     () => new Set(myRequests.map((request) => request.donationId)),
     [myRequests],
   );
-  const availableDonations = donations;
+  const availableDonations = donations.filter(
+  (donation) => donation.status === "Available"
+);
 
   return (
     <section className="dashboard-section">
@@ -112,7 +116,9 @@ export default function NGODashboard() {
                   <span
                     className={`status-pill status-${request.status.toLowerCase()}`}
                   >
-                    {STATUS_LABELS[request.status] || request.status}
+                    {request.status === "Accepted" ? "Claimed" : (
+                       STATUS_LABELS[request.status] || request.status
+                    )}
                   </span>
                 </div>
               ))}
@@ -130,15 +136,18 @@ export default function NGODashboard() {
           </Link>
         </div>
         {availableDonations.length === 0 ? (
-          <div className="empty-inline">
-            <span>🍽️</span>
-            <div>
-              <strong>No available donations right now.</strong>
-              <p>Check back soon, or browse the full food list for updates.</p>
-            </div>
-          </div>
-        ) : (
-          <div className="food-grid">
+  <div className="empty-inline">
+    <span>🍽️</span>
+    <div>
+      <strong>No available donations right now.</strong>
+      <p>
+        All current listings may be claimed, picked up, or awaiting
+        new donations. Check back soon.
+      </p>
+    </div>
+  </div>
+) : (
+  <div className="food-grid">
             {availableDonations.slice(0, 3).map((donation) => (
               <div className="dashboard-food-wrapper" key={donation.id}>
                 <FoodCard donation={donation} />

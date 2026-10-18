@@ -1,5 +1,5 @@
 import React from "react";
-import { useMemo, useRef, useState } from "react";
+import {useEffect,useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { initialDonations } from "../data/donations";
@@ -24,10 +24,39 @@ export default function ProviderDashboard() {
 const donations = useSelector(
   (state) => state.donations.items
 );
+useEffect(() => {
+  const checkExpiredDonations = () => {
+    const now = Date.now();
+
+    donations.forEach((donation) => {
+      const deadline = new Date(donation.pickupDeadline).getTime();
+
+      if (
+        donation.status === "Available" &&
+        Number.isFinite(deadline) &&
+        deadline <= now
+      ) {
+        dispatch(
+          updateDonation({
+            id: donation.id,
+            status: "Expired",
+          })
+        );
+      }
+    });
+  };
+
+  checkExpiredDonations();
+
+  const intervalId = setInterval(checkExpiredDonations, 30_000);
+
+  return () => clearInterval(intervalId);
+}, [donations, dispatch]);
   const [requests, setRequests] = useLocalStorage(STORAGE_KEYS.requests, []);
   const [form, setForm] = useState(emptyForm);
   const [message, setMessage] = useState("");
   const [formError, setFormError] = useState("");
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const formRef = useRef(null);
 
   const myDonations = useMemo(
@@ -42,12 +71,28 @@ const donations = useSelector(
     () => requests.filter((request) => myDonationIds.has(request.donationId)),
     [requests, myDonationIds],
   );
+  const newRequestCount = incomingRequests.filter(
+  (request) => request.status === "Requested"
+  ).length;
   const activeCount = useMemo(
     () =>
       myDonations.filter((donation) => donation.status === "Available").length,
     [myDonations],
   );
+  const claimedCount = useMemo(
+  () => myDonations.filter((donation) => donation.status === "Claimed").length,
+  [myDonations],
+);
 
+const pickedUpCount = useMemo(
+  () => myDonations.filter((donation) => donation.status === "Picked Up").length,
+  [myDonations],
+);
+
+const expiredCount = useMemo(
+  () => myDonations.filter((donation) => donation.status === "Expired").length,
+  [myDonations],
+);
   const handleChange = (event) =>
     setForm((current) => ({
       ...current,
@@ -106,25 +151,96 @@ const donations = useSelector(
   );
     }
   };
+  const markAsPickedUp = (donationId) => {
+  dispatch(
+    updateDonation({
+      id: donationId,
+      status: "Picked Up",
+    })
+  );
+
+  setMessage("Donation marked as picked up successfully.");
+};
 
   return (
     <section className="dashboard-section">
       <div className="container">
         <div className="dashboard-header">
-          <div>
-            <p className="eyebrow">PROVIDER DASHBOARD</p>
-            <h1>Welcome, {session?.name || "Food Provider"}.</h1>
-            <p>
-              Your dashboard shows only your listings and the NGO requests
-              received for them.
-            </p>
-          </div>
-          <div className="dashboard-stat">
+  <div>
+    <p className="eyebrow">PROVIDER DASHBOARD</p>
+    <h1>Welcome, {session?.name || "Food Provider"}.</h1>
+    <p>
+      Your dashboard shows only your listings and the NGO requests
+      received for them.
+    </p>
+  </div>
+
+  <div className="notification-wrapper">
+    <button
+      type="button"
+      className="notification-button"
+      aria-label={`${newRequestCount} pending NGO requests`}
+      onClick={() => setNotificationsOpen((open) => !open)}
+    >
+      <span className="notification-icon">➤</span>
+
+      {newRequestCount > 0 && (
+        <span className="notification-count">
+          {newRequestCount > 99 ? "99+" : newRequestCount}
+        </span>
+      )}
+</button>
+
+    {notificationsOpen && (
+      <div className="notification-dropdown">
+        <h3>NGO Requests</h3>
+
+        {incomingRequests.filter(
+          (request) => request.status === "Requested"
+        ).length === 0 ? (
+          <p>No new requests yet.</p>
+        ) : (
+          incomingRequests
+            .filter((request) => request.status === "Requested")
+            .map((request) => {
+              const donation = myDonations.find(
+                (item) => item.id === request.donationId
+              );
+
+              return (
+                <div className="notification-item" key={request.id}>
+                  <strong>New food request</strong>
+                  <p>
+                    {request.ngoName || "An NGO"} requested{" "}
+                    {donation?.foodName || "your donation"}.
+                  </p>
+                </div>
+              );
+            })
+        )}
+      </div>
+    )}
+  </div>
+         <div className="dashboard-stat">
             <span>Active listings</span>
             <strong>{activeCount}</strong>
           </div>
-        </div>
 
+          <div className="dashboard-stat">
+            <span>Claimed listings</span>
+            <strong>{claimedCount}</strong>
+          </div>
+
+          <div className="dashboard-stat">
+            <span>Picked up</span>
+            <strong>{pickedUpCount}</strong>
+          </div>
+
+          <div className="dashboard-stat">
+            <span>Expired listings</span>
+            <strong>{expiredCount}</strong>
+          </div>
+        </div>
         <div className="dashboard-grid">
           <form
             className="dashboard-panel"
@@ -218,12 +334,15 @@ const donations = useSelector(
               <label className="form-field">
                 <span>Pickup deadline *</span>
                 <input
-                  required
-                  name="pickupDeadline"
-                  value={form.pickupDeadline}
-                  onChange={handleChange}
-                  placeholder="e.g. Today, 10:30 PM"
-                />
+                    required
+                    type="datetime-local"
+                    name="pickupDeadline"
+                    value={form.pickupDeadline}
+                    onChange={handleChange}
+                  />
+                  <small className="field-hint">
+                      Select the pickup date and time.
+                    </small>
               </label>
               <label className="form-field full">
                 <span>Description</span>
@@ -262,25 +381,46 @@ const donations = useSelector(
                 </div>
               </div>
             ) : (
-              <div className="mini-list">
-                {myDonations.slice(0, 5).map((donation) => (
-                  <Link
-                    to={`/food/${donation.id}`}
-                    className="mini-list-item"
-                    key={donation.id}
-                  >
-                    <span className="mini-list-icon">{donation.accent}</span>
-                    <span>
-                      <strong>{donation.foodName}</strong>
-                      <small>
-                        {donation.quantity} {donation.unit} ·{" "}
-                        {donation.location}
-                      </small>
-                    </span>
-                    <span>→</span>
-                  </Link>
-                ))}
-              </div>
+              
+<div className="mini-list">
+  {myDonations.slice(0, 5).map((donation) => (
+    <div className="mini-list-item" key={donation.id}>
+      <Link
+        to={`/food/${donation.id}`}
+        className="mini-list-link"
+      >
+        <span className="mini-list-icon">{donation.accent}</span>
+
+        <span>
+          <strong>{donation.foodName}</strong>
+          <small>
+            {donation.quantity} {donation.unit} ·{" "}
+            {donation.location}
+          </small>
+        </span>
+      </Link>
+
+      <span
+        className={`status-pill status-${donation.status
+          .toLowerCase()
+          .replace(/\s+/g, "-")}`}
+      >
+        {donation.status}
+      </span>
+
+      {donation.status === "Claimed" && (
+        <button
+          type="button"
+          className="button button-primary"
+          onClick={() => markAsPickedUp(donation.id)}
+        >
+          Mark as Picked Up
+        </button>
+      )}
+    </div>
+  ))}
+</div>
+
             )}
           </aside>
         </div>
@@ -291,9 +431,15 @@ const donations = useSelector(
               <p className="eyebrow">INCOMING REQUESTS</p>
               <h2>NGOs requesting your food</h2>
             </div>
-            <span className="request-count">{incomingRequests.length}</span>
+            <span className="request-count">
+              {incomingRequests.filter(
+                (request) => request.status === "Requested"
+              ).length}
+            </span>
           </div>
-          {incomingRequests.length === 0 ? (
+          {incomingRequests.filter(
+              (request) => request.status === "Requested"
+            ).length === 0 ? (
             <div className="empty-inline">
               <span>📭</span>
               <div>
