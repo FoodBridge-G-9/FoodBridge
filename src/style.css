@@ -1993,3 +1993,130 @@ button:disabled {
   font-size: 13px;
   line-height: 1.5;
 }
+.food-card-visual {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #f4eee6;
+  border-radius: 16px;
+}
+
+.food-card-visual img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.food-image-label {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #30352f;
+  font-size: 12px;
+  font-weight: 600;
+}
+.food-details-image {
+  width: 100%;
+  min-height: 280px;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  position: relative;
+  border-radius: 20px;
+  background: #f4eee6;
+}
+
+.food-details-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  position: absolute;
+  inset: 0;
+}
+
+.food-details-image .food-image-label {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #30352f;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.form-success {
+  color: #14532d;
+  background-color: #dcfce7;
+  border: 1px solid #86efac;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.verification-success {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+  border-radius: 10px;
+  padding: 16px;
+  margin: 18px 0;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.verification-success strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 16px;
+  text-align: center;
+}
+
+.verification-success p {
+  margin: 0;
+  color: #166534;
+  font-size: 13px;
+  text-align: center;
+}
+
+.verification-button {
+  width: 100%;
+  margin-top: 12px;
+}
+
+/* Green Continue to signup button */
+button.verification-button.button-primary {
+  background-color: #16a34a;
+  color: #ffffff;
+  border: none;
+  text-align: center;
+  justify-content: center;
+}
+
+button.verification-button.button-primary:hover {
+  background-color: #15803d;
+}
+
+
+
+p.form-error,
+.form-error[role="alert"] {
+  background: #103f32 !important;
+  color: #ffffff !important;
+  border: 1px solid #276653 !important;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 12px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+

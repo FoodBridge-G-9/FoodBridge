@@ -1,9 +1,9 @@
 
-import React,{ useState } from "react";
+import React, { useState } from "react";
 import "./RestaurantSearch.css";
 
-// Sample data for the FoodBridge demo.
-// These entries are NOT government-verified businesses.
+const STORAGE_KEY = "foodbridge-registered-restaurants";
+
 const restaurants = [
   {
     id: "R001",
@@ -27,14 +27,24 @@ const restaurants = [
   },
 ];
 
+function getSavedRestaurants() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
 function RestaurantSearch({ onContinue, onRegisterNew }) {
   const [search, setSearch] = useState("");
-  const [selectedRestaurant, setSelectedRestaurant] =
-    useState(null);
-  const [showRegisterMessage, setShowRegisterMessage] =
-    useState(false);
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [showRegisterMessage, setShowRegisterMessage] = useState(false);
+  const [registeredRestaurants, setRegisteredRestaurants] =
+    useState(getSavedRestaurants);
 
-  const filteredRestaurants = restaurants.filter((restaurant) => {
+  const allRestaurants = [...restaurants, ...registeredRestaurants];
+
+  const filteredRestaurants = allRestaurants.filter((restaurant) => {
     const searchText = search.trim().toLowerCase();
 
     return (
@@ -49,19 +59,98 @@ function RestaurantSearch({ onContinue, onRegisterNew }) {
     setShowRegisterMessage(false);
   }
 
-  function handleSelect(restaurant) {
-    setSelectedRestaurant(restaurant);
-    setSearch(`${restaurant.name} — ${restaurant.location}`);
+  
+function handleSelect(restaurant) {
+  const hasCityInName = /\bpune\b/i.test(restaurant.name);
+  const hasPuneLocation = /\bpune\b/i.test(restaurant.location);
+
+  const updatedRestaurant =
+    hasCityInName && !hasPuneLocation
+      ? {
+          ...restaurant,
+          name: restaurant.name.replace(/\s*,?\s*pune$/i, "").trim(),
+          location: "Pune, Maharashtra",
+        }
+      : restaurant;
+
+  if (updatedRestaurant !== restaurant) {
+    const updatedRestaurants = registeredRestaurants.map((item) =>
+      item.id === restaurant.id ? updatedRestaurant : item
+    );
+
+    setRegisteredRestaurants(updatedRestaurants);
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(updatedRestaurants)
+    );
+  }
+
+  setSelectedRestaurant(updatedRestaurant);
+  setSearch(
+    `${updatedRestaurant.name} — ${updatedRestaurant.location}`
+  );
+  setShowRegisterMessage(false);
+}
+
+    
+function handleRegisterNew() {
+  const searchText = search.trim();
+
+  if (!searchText) return;
+
+  // Extract Pune from the end of the entered text.
+  const isPune = /\s+pune$/i.test(searchText);
+
+  const name = searchText
+    .replace(/\s+pune$/i, "")
+    .trim();
+
+  if (!name) return;
+
+  // Avoid registering a restaurant that already exists.
+  const existing = allRestaurants.find(
+    (restaurant) =>
+      restaurant.name.toLowerCase() === name.toLowerCase() &&
+      (
+        !isPune ||
+        restaurant.location.toLowerCase().includes("pune")
+      )
+  );
+
+  if (existing) {
+    setSelectedRestaurant(existing);
+    setSearch(`${existing.name} — ${existing.location}`);
     setShowRegisterMessage(false);
+    return;
   }
 
-  function handleRegisterNew() {
-    setShowRegisterMessage(true);
+  const newRestaurant = {
+    id: `R${Date.now()}`,
+    name,
+    location: isPune
+      ? "Pune, Maharashtra"
+      : "Location to be confirmed",
+    verificationStatus: "pending",
+  };
 
-    if (onRegisterNew) {
-      onRegisterNew(search.trim());
-    }
-  }
+  const updatedRestaurants = [
+    ...registeredRestaurants,
+    newRestaurant,
+  ];
+
+  setRegisteredRestaurants(updatedRestaurants);
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(updatedRestaurants)
+  );
+
+  setSelectedRestaurant(newRestaurant);
+  setSearch(`${newRestaurant.name} — ${newRestaurant.location}`);
+  setShowRegisterMessage(true);
+
+  onRegisterNew?.(newRestaurant.name);
+}
+
 
   return (
     <div className="restaurant-search-page">
@@ -109,8 +198,7 @@ function RestaurantSearch({ onContinue, onRegisterNew }) {
               ))
             ) : (
               <p className="no-results">
-                Restaurant not found. Please check the
-                name or location.
+                Restaurant not found. You can register it below.
               </p>
             )}
           </div>
@@ -126,9 +214,9 @@ function RestaurantSearch({ onContinue, onRegisterNew }) {
 
         {showRegisterMessage && (
           <p className="registration-notice" role="status">
-            This restaurant is not in our demo directory.
-            You can register it for admin verification.
-            It will not be approved automatically.
+            Restaurant saved in the demo directory.
+            Its location and business details still need confirmation.
+            This does not mean the restaurant is verified.
           </p>
         )}
 
@@ -154,8 +242,8 @@ function RestaurantSearch({ onContinue, onRegisterNew }) {
         </div>
 
         <p className="verification-note">
-          Selecting a restaurant does not verify its
-          identity. New providers must complete verification.
+          Selecting or registering a restaurant does not verify
+          its identity. New providers must complete verification.
         </p>
       </div>
     </div>

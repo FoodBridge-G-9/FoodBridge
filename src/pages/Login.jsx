@@ -190,20 +190,43 @@ const existingVerifiedProvider =
       user.licenseVerificationStatus === "demo-verified"
   );
 
-  if (role === "provider" && !selectedRestaurant) {
-    return (
-      <RestaurantSearch
-        onContinue={setSelectedRestaurant}
-        onRegisterNew={(name) => {
-          console.log("New restaurant:", name);
-        }}
-        onBack={() => {
-          setRole("ngo");
-          setSelectedRestaurant(null);
-        }}
-      />
-    );
-  }
+  
+if (role === "provider" && !selectedRestaurant) {
+  return (
+    <RestaurantSearch
+      onContinue={(restaurant) => {
+        setSelectedRestaurant(restaurant);
+        setError("");
+        setMessage("");
+        setLicenseFile(null);
+        setFssaiNumber("");
+        setVerificationStatus("idle");
+        setProviderReadyForSignup(false);
+      }}
+      onRegisterNew={(restaurantName) => {
+        const trimmedName = restaurantName.trim();
+
+        if (!trimmedName) return;
+
+        setSelectedRestaurant({
+          name: trimmedName,
+          location: "",
+        });
+        setError("");
+        setMessage("");
+        setLicenseFile(null);
+        setFssaiNumber("");
+        setVerificationStatus("idle");
+        setProviderReadyForSignup(false);
+      }}
+      onBack={() => {
+        setRole("ngo");
+        setSelectedRestaurant(null);
+      }}
+    />
+  );
+}
+
   // const isProviderVerified = verificationStatus === "verified";
   // const [providerReadyForSignup, setProviderReadyForSignup] = useState(false);
   if (role === "provider" && selectedRestaurant&& !providerReadyForSignup&& !(mode === "login" && existingVerifiedProvider)) {
@@ -273,23 +296,26 @@ const existingVerifiedProvider =
         )}
 
         {uploadError && (
-          <p role="alert">{uploadError}</p>
-        )}
-        
-{verificationStatus === "verified" && (
-  <p className="form-success" role="status">
-    Demo verification successful! This does not confirm a genuine FSSAI licence.
-  </p>
-)}
-
-{verificationStatus === "rejected" && (
   <p className="form-error" role="alert">
-    Demo verification failed. Please check the sample number.
+    {uploadError}
   </p>
 )}
+        
+         {verificationStatus === "verified" && (
+  <div className="verification-success" role="status">
+    <strong>✓ Demo Verification Successful</strong>
+    <p>
+      This is a demo result only. It does not confirm a genuine
+      FSSAI licence.
+    </p>
+  </div>
+)}
 
-<button
-  className="button button-primary button-full verification-button"
+
+
+{verificationStatus !== "verified" && (
+  <button
+    className="button button-primary button-full verification-button"
   type="button"
   onClick={() => {
     setUploadError("");
@@ -332,36 +358,23 @@ const existingVerifiedProvider =
 >
   Verify License (Demo)
 </button>
+)}
         
-{verificationStatus === "verified" && (
-  <button
-    type="button"
-    onClick={() => {
+{verificationStatus === "verified" && (     
+<button
+  type="button"
+  className="button button-primary button-full verification-button"
+  onClick={() => {
     setName(selectedRestaurant.name);
     setProviderReadyForSignup(true);
     setMode("signup");
     setError("");
     setMessage("");
-}}
-  >
-    Continue to signup
-  </button>
+  }}
+>
+  Continue to signup →
+</button>
 )}
-
-        <button
-          type="button"
-          className="button button-outline button-full verification-button"
-          onClick={() => {
-            setSelectedRestaurant(null);
-            setLicenseFile(null);
-            setUploadError("");
-            setFssaiNumber("");
-            setVerificationStatus("idle");
-            setProviderReadyForSignup(false);
-          }}
-        >
-          Back to restaurant search
-        </button>
       </div>
     </section>
   );

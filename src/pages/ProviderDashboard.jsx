@@ -6,7 +6,11 @@ import { initialDonations } from "../data/donations";
 import { STORAGE_KEYS } from "../utils/storage";
 import { useSessionContext } from "../context/SessionContext";
 import { useDispatch, useSelector } from "react-redux";
-import { addDonation, updateDonation } from "../features/donations/donationsSlice";
+import {
+  addDonation,
+  updateDonation,
+  removeDonation,
+} from "../features/donations/donationsSlice";
 const emptyForm = {
   foodName: "",
   category: "Cooked Meals",
@@ -54,9 +58,15 @@ useEffect(() => {
 }, [donations, dispatch]);
   const [requests, setRequests] = useLocalStorage(STORAGE_KEYS.requests, []);
   const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState("");
   const [formError, setFormError] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [existingImageUrl, setExistingImageUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const imageInputRef = useRef(null);
   const formRef = useRef(null);
 
   const myDonations = useMemo(
@@ -71,9 +81,17 @@ useEffect(() => {
     () => requests.filter((request) => myDonationIds.has(request.donationId)),
     [requests, myDonationIds],
   );
-  const newRequestCount = incomingRequests.filter(
-  (request) => request.status === "Requested"
-  ).length;
+  
+const newRequestCount = incomingRequests.filter((request) => {
+  if (request.status !== "Requested") return false;
+
+  const donation = myDonations.find(
+    (item) => item.id === request.donationId
+  );
+
+  return donation && donation.status === "Available";
+}).length;
+
   const activeCount = useMemo(
     () =>
       myDonations.filter((donation) => donation.status === "Available").length,
@@ -98,31 +116,123 @@ const expiredCount = useMemo(
       ...current,
       [event.target.name]: event.target.value,
     }));
+    const handleImageChange = (event) => {
+  const file = event.target.files?.[0];
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  if (!file) return;
 
-    const quantity = Number(form.quantity);
-    if (!Number.isInteger(quantity) || quantity <= 0) {
-      setFormError("Quantity must be a whole number greater than 0.");
-      return;
+  if (!file.type.startsWith("image/")) {
+    setFormError("Please select a valid image.");
+    event.target.value = "";
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    setFormError("Image size must be 5 MB or less.");
+    event.target.value = "";
+    return;
+  }
+
+  setFormError("");
+  setImageFile(file);
+  setImagePreview(URL.createObjectURL(file));
+};
+  const uploadImage = async (file) => {
+  const data = new FormData();
+
+  data.append("file", file);
+  data.append("upload_preset", "foodbridge_uploads");
+
+  const response = await fetch(
+    "https://api.cloudinary.com/v1_1/l2awiw6v/image/upload",
+    {
+      method: "POST",
+      body: data,
+    }
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result.error?.message || "Image upload failed."
+    );
+  }
+
+  return result.secure_url;
+};
+
+  const handleSubmit = async (event) => {
+  event.preventDefault();
+
+  const quantity = Number(form.quantity);
+
+  if (!Number.isInteger(quantity) || quantity <= 0) {
+    setFormError("Quantity must be a whole number greater than 0.");
+    return;
+  }
+
+  if (!imageFile && editingId === null) {
+  setFormError("Please upload a photo of the food donation.");
+  return;
+}
+
+  setFormError("");
+  setMessage("");
+  setUploading(true);
+
+ try {
+  const existingDonation = donations.find(
+    (d) => d.id === editingId
+  );
+
+  const imageUrl = imageFile
+    ? await uploadImage(imageFile)
+    : existingDonation?.imageUrl || "";
+
+  const newDonation = {
+    ...form,
+    id: editingId ?? Date.now(),
+    provider: session.name,
+    providerId: session.id,
+    quantity,
+    status: editingId
+      ? existingDonation?.status || "Available"
+      : "Available",
+    imageUrl,
+    accent: "🍲",
+  };
+if (editingId !== null) {
+  dispatch(updateDonation(newDonation));
+  setMessage("Donation updated successfully!");
+  setEditingId(null);
+} else {
+  dispatch(addDonation(newDonation));
+  setMessage("Donation published successfully. It is now visible to NGOs.");
+}
+
+
+    setForm(emptyForm);
+    setImageFile(null);
+    setImagePreview("");
+    setExistingImageUrl("");
+
+      if (imageInputRef.current) {
+      imageInputRef.current.value = "";
     }
 
-    setFormError("");
-    const newDonation = {
-      ...form,
-      id: Date.now(),
-      provider: session.name,
-      providerId: session.id,
-      quantity,
-      status: "Available",
-      accent: "🍲",
-    };
-    dispatch(addDonation(newDonation));
-    setForm(emptyForm);
-    setMessage("Donation published successfully. It is now visible to NGOs.");
-    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+    formRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  } catch (error) {
+    setFormError(
+      error.message || "Could not upload the photo. Please try again."
+    );
+  } finally {
+    setUploading(false);
+  }
+};
 
   const updateRequest = (requestId, status) => {
     const target = requests.find((request) => request.id === requestId);
@@ -195,29 +305,38 @@ const expiredCount = useMemo(
       <div className="notification-dropdown">
         <h3>NGO Requests</h3>
 
-        {incomingRequests.filter(
-          (request) => request.status === "Requested"
-        ).length === 0 ? (
-          <p>No new requests yet.</p>
-        ) : (
-          incomingRequests
-            .filter((request) => request.status === "Requested")
-            .map((request) => {
-              const donation = myDonations.find(
-                (item) => item.id === request.donationId
-              );
+        
+{(() => {
+  const activeRequests = incomingRequests.filter((request) => {
+    if (request.status !== "Requested") return false;
 
-              return (
-                <div className="notification-item" key={request.id}>
-                  <strong>New food request</strong>
-                  <p>
-                    {request.ngoName || "An NGO"} requested{" "}
-                    {donation?.foodName || "your donation"}.
-                  </p>
-                </div>
-              );
-            })
-        )}
+    const donation = myDonations.find(
+      (item) => item.id === request.donationId
+    );
+
+    return donation && donation.status !== "Expired";
+  });
+
+  return activeRequests.length === 0 ? (
+    <p>No new requests yet.</p>
+  ) : (
+    activeRequests.map((request) => {
+      const donation = myDonations.find(
+        (item) => item.id === request.donationId
+      );
+
+      return (
+        <div className="notification-item" key={request.id}>
+          <strong>New food request</strong>
+          <p>
+            {request.ngoName || "An NGO"} requested{" "}
+            {donation?.foodName || "your donation"}.
+          </p>
+        </div>
+      );
+    })
+  );
+})()}
       </div>
     )}
   </div>
@@ -266,6 +385,37 @@ const expiredCount = useMemo(
                   placeholder="e.g. Veg sandwiches"
                 />
               </label>
+              <label className="form-field full">
+  <span>Food photo *</span>
+
+  <input
+    ref={imageInputRef}
+    type="file"
+    accept="image/*"
+    onChange={handleImageChange}
+  />
+
+  <small className="field-hint">
+  {editingId !== null
+    ? "Your current photo is shown below. Choose a new file only if you want to replace it."
+    : "Upload a clear photo of the food being donated. Maximum 5 MB."}
+</small>
+  {(imagePreview || existingImageUrl) && (
+  <img
+    src={imagePreview || existingImageUrl}
+    alt="Food donation preview"
+    style={{
+      display: "block",
+      width: "100%",
+      maxWidth: "360px",
+      maxHeight: "260px",
+      objectFit: "cover",
+      borderRadius: "12px",
+      marginTop: "12px",
+    }}
+  />
+)}
+</label>
               <label className="form-field">
                 <span>Category *</span>
                 <select
@@ -295,6 +445,7 @@ const expiredCount = useMemo(
               </label>
               <label className="form-field">
                 <span>Quantity *</span>
+                
                 <input
                   required
                   min="1"
@@ -303,8 +454,10 @@ const expiredCount = useMemo(
                   name="quantity"
                   value={form.quantity}
                   onChange={handleChange}
+                  onWheel={(e) => e.currentTarget.blur()}
                   placeholder="40"
                 />
+
               </label>
               <label className="form-field">
                 <span>Unit *</span>
@@ -355,9 +508,39 @@ const expiredCount = useMemo(
                 ></textarea>
               </label>
             </div>
-            <button className="button button-primary" type="submit">
-              Publish donation →
-            </button>
+            <button
+  className="button button-primary"
+  type="submit"
+  disabled={uploading}
+>
+  {uploading
+    ? "Saving donation..."
+    : editingId !== null
+      ? "Update donation →"
+      : "Publish donation →"}
+</button>
+
+{editingId !== null && (
+  <button
+    type="button"
+    className="button button-secondary"
+    onClick={() => {
+      setForm(emptyForm);
+      setEditingId(null);
+      setImageFile(null);
+      setImagePreview("");
+      setExistingImageUrl("");
+      setFormError("");
+      setMessage("");
+
+      if (imageInputRef.current) {
+        imageInputRef.current.value = "";
+      }
+    }}
+  >
+    Cancel editing
+  </button>
+)}
           </form>
 
           <aside className="dashboard-panel dashboard-side">
@@ -383,7 +566,7 @@ const expiredCount = useMemo(
             ) : (
               
 <div className="mini-list">
-  {myDonations.slice(0, 5).map((donation) => (
+  {myDonations.slice(0, 10).map((donation) => (
     <div className="mini-list-item" key={donation.id}>
       <Link
         to={`/food/${donation.id}`}
@@ -417,6 +600,53 @@ const expiredCount = useMemo(
           Mark as Picked Up
         </button>
       )}
+      {donation.status === "Available" && (
+  <div className="donation-actions">
+    <button
+      type="button"
+      className="button button-secondary"
+      onClick={() => {
+        setForm({
+          foodName: donation.foodName || "",
+          category: donation.category || "Cooked Meals",
+          quantity: String(donation.quantity ?? ""),
+          unit: donation.unit || "portions",
+          foodType: donation.foodType || "Vegetarian",
+          location: donation.location || "",
+          pickupDeadline: donation.pickupDeadline || "",
+          description: donation.description || "",
+        });
+        setExistingImageUrl(donation.imageUrl || "");
+        setImageFile(null);
+        setImagePreview("");
+        setEditingId(donation.id);
+        setMessage("Editing your donation. Update the details on the left.");
+        setFormError("");
+        formRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }}
+    >
+      Edit
+    </button>
+
+    <button
+      type="button"
+      className="button button-secondary"
+      onClick={() => {
+        const confirmed = window.confirm(
+          `Delete "${donation.foodName}"? This cannot be undone.`
+        );
+        if (confirmed) {
+          dispatch(removeDonation(donation.id));
+        }
+      }}
+    >
+      Delete
+    </button>
+  </div>
+)}
     </div>
   ))}
 </div>
@@ -432,14 +662,10 @@ const expiredCount = useMemo(
               <h2>NGOs requesting your food</h2>
             </div>
             <span className="request-count">
-              {incomingRequests.filter(
-                (request) => request.status === "Requested"
-              ).length}
-            </span>
+            {newRequestCount}
+          </span>
           </div>
-          {incomingRequests.filter(
-              (request) => request.status === "Requested"
-            ).length === 0 ? (
+         {newRequestCount === 0 ?  (
             <div className="empty-inline">
               <span>📭</span>
               <div>
@@ -452,44 +678,55 @@ const expiredCount = useMemo(
             </div>
           ) : (
             <div className="request-list">
-              {incomingRequests.map((request) => (
-                <div
-                  className="request-item request-item-detailed"
-                  key={request.id}
-                >
-                  <div>
-                    <strong>{request.ngoName}</strong>
-                    <small>
-                      Requested: {request.donationName} · {request.providerName}
-                    </small>
-                  </div>
-                  <div className="request-actions">
-                    <span
-                      className={`status-pill status-${request.status.toLowerCase()}`}
-                    >
-                      {request.status}
-                    </span>
-                    {request.status === "Requested" && (
-                      <>
-                        <button
-                          type="button"
-                          className="small-action accept"
-                          onClick={() => updateRequest(request.id, "Accepted")}
-                        >
-                          Accept
-                        </button>
-                        <button
-                          type="button"
-                          className="small-action decline"
-                          onClick={() => updateRequest(request.id, "Declined")}
-                        >
-                          Decline
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ))}
+             {incomingRequests
+  .filter((request) => {
+    const donation = myDonations.find(
+      (item) => item.id === request.donationId
+    );
+
+    return (
+      donation &&
+      donation.status !== "Expired" &&
+      donation.status !== "Picked Up" &&
+      request.status === "Requested"
+    );
+  })
+  .map((request) => (<div
+        className="request-item request-item-detailed"
+        key={request.id}
+      >
+        <div>
+          <strong>{request.ngoName}</strong>
+          <small>
+            Requested: {request.donationName} · {request.providerName}
+          </small>
+        </div>
+
+        <div className="request-actions">
+          <span
+            className={`status-pill status-${request.status.toLowerCase()}`}
+          >
+            {request.status}
+          </span>
+
+          <button
+            type="button"
+            className="small-action accept"
+            onClick={() => updateRequest(request.id, "Accepted")}
+          >
+            Accept
+          </button>
+
+          <button
+            type="button"
+            className="small-action decline"
+            onClick={() => updateRequest(request.id, "Declined")}
+          >
+            Decline
+          </button>
+        </div>
+      </div>
+    ))}
             </div>
           )}
         </div>

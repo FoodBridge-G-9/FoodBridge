@@ -1,11 +1,19 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { getFoodImage } from "../utils/foodImages";
 
 export default function FoodCard({ donation }) {
   return (
     <article className="food-card">
-      <div className="food-card-visual" aria-hidden="true">
-        {donation.accent}
+      <div className="food-card-visual" >
+         <img
+            src={getFoodImage(donation)}
+            alt={`${donation.foodName || donation.category} donation`}
+            loading="lazy"
+          />
+          <span className="food-image-label">
+            {donation.category || "Food Donation"}
+          </span>
       </div>
       <div className="food-card-body">
         <div className="food-card-topline">

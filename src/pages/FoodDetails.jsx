@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { STORAGE_KEYS } from "../utils/storage";
 import { useSessionContext } from "../context/SessionContext";
+import { getFoodImage } from "../utils/foodImages";
 export default function FoodDetails() {
   const{session}=useSessionContext();
   const { id } = useParams();
@@ -111,10 +112,15 @@ const [requests, setRequests] = useLocalStorage(
           ← Back to available food
         </Link>
         <div className="details-layout">
-          <div className="details-visual">
-            <span>{donation.accent}</span>
-            <p>{donation.category}</p>
-          </div>
+          <div className="food-details-image">
+          <img
+            src={getFoodImage(donation)}
+            alt={`${donation.foodName || donation.category} donation`}
+          />
+          <span className="food-image-label">
+            {donation.category || "Food Donation"}
+          </span>
+        </div>
           <div className="details-content">
             <span className="tag">{donation.foodType}</span>
             <h1>{donation.foodName}</h1>
@@ -159,7 +165,13 @@ const [requests, setRequests] = useLocalStorage(
                 requested this donation.
               </span>
             </div>
-            {session?.role === "provider" &&
+             {donation.status === "Expired" ? (
+                <div className="info-box">
+                  ⏰ This donation has expired. The pickup deadline has passed,
+                  so it is no longer available for requests.Please explore other available donations.
+                  </div>
+             ) :
+            session?.role === "provider" &&
               session.id === donation.providerId ? (
                 <div className="info-box">
                   This is your listing. Open your dashboard to review NGO
@@ -172,16 +184,12 @@ const [requests, setRequests] = useLocalStorage(
                     <p>✓ This donation has been picked up.</p>
                   )}
                 </div>
-              ) : currentRequest?.status === "Requested" ? (
+              )  
+                : currentRequest?.status === "Requested" ? (
                 <div className="success-box">
                   ✓ Your request is recorded and waiting for the provider.
                 </div>
-                ) : donation.status === "Expired" ? (
-                <div className="info-box">
-                  ⏰ This donation has expired. The pickup deadline has passed,
-                  so it is no longer available for requests.
-                </div>
-              ) : donation.status === "Claimed" ||
+                ) : donation.status === "Claimed" ||
                 donation.status === "Picked Up" ? (
                 <div className="info-box">
                   {donation.status === "Picked Up"
