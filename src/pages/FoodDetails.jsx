@@ -141,15 +141,17 @@ const [requests, setRequests] = useLocalStorage(
                 <span>Pickup deadline</span>
                 <strong>
                 {donation.pickupDeadline
-                  ? new Date(donation.pickupDeadline).toLocaleString("en-IN", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                      hour12: true,
-                    })
-                  : "Not specified"}
+                    ? !Number.isNaN(new Date(donation.pickupDeadline).getTime())
+                      ? new Date(donation.pickupDeadline).toLocaleString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
+                      : donation.pickupDeadline
+                    : "Not specified"}
               </strong>
               </div>
             </div>
