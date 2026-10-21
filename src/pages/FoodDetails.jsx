@@ -117,9 +117,7 @@ const [requests, setRequests] = useLocalStorage(
             src={getFoodImage(donation)}
             alt={`${donation.foodName || donation.category} donation`}
           />
-          <span className="food-image-label">
-            {donation.category || "Food Donation"}
-          </span>
+          
         </div>
           <div className="details-content">
             <span className="tag">{donation.foodType}</span>

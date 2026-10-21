@@ -35,13 +35,19 @@ function getSavedRestaurants() {
   }
 }
 
-function RestaurantSearch({ onContinue, onRegisterNew }) {
+ function RestaurantSearch({
+  mode,
+  onContinue,
+  onRegisterNew,
+  onProviderLogin,
+}) {
   const [search, setSearch] = useState("");
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [showRegisterMessage, setShowRegisterMessage] = useState(false);
   const [registeredRestaurants, setRegisteredRestaurants] =
     useState(getSavedRestaurants);
-
+const [password, setPassword] = useState("");
+const [loginError, setLoginError] = useState("");
   const allRestaurants = [...restaurants, ...registeredRestaurants];
 
   const filteredRestaurants = allRestaurants.filter((restaurant) => {
@@ -176,7 +182,31 @@ function handleRegisterNew() {
           onChange={(e) => handleSearch(e.target.value)}
           autoComplete="off"
         />
+      {mode === "login" && (
+  <>
+    <label htmlFor="restaurant-password">
+      Password
+    </label>
 
+    <input
+      id="restaurant-password"
+      type="password"
+      placeholder="Enter your password"
+      value={password}
+      onChange={(e) => {
+        setPassword(e.target.value);
+        setLoginError("");
+      }}
+      autoComplete="current-password"
+    />
+
+    {loginError && (
+      <p role="alert" className="login-error">
+        {loginError}
+      </p>
+    )}
+  </>
+)}
         {search.trim() !== "" && !selectedRestaurant && (
           <div className="restaurant-results">
             {filteredRestaurants.length > 0 ? (
@@ -221,13 +251,22 @@ function handleRegisterNew() {
         )}
 
         <button
-          type="button"
-          className="continue-button"
-          disabled={!selectedRestaurant}
-          onClick={() => onContinue?.(selectedRestaurant)}
-        >
-          Continue
-        </button>
+  type="button"
+  className="continue-button"
+  disabled={
+    !selectedRestaurant ||
+    (mode === "login" && !password.trim())
+  }
+  onClick={() => {
+    if (mode === "login") {
+      onProviderLogin?.(selectedRestaurant, password);
+    } else {
+      onContinue?.(selectedRestaurant);
+    }
+  }}
+>
+  Continue
+</button>
 
         <div className="register-prompt">
           <span>Can't find your restaurant?</span>

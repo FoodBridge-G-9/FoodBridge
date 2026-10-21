@@ -17,7 +17,7 @@ export const initialDonations = [
   },
   {
     id: 2,
-    foodName: "Dal & Rice Meals",
+    foodName: "dal & rice meals",
     category: "Cooked Meals",
     quantity: 65,
     unit: "meal boxes",
