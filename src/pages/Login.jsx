@@ -80,7 +80,35 @@ const getAccountDetails = (accountName) => {
     );
   };
 
-  
+  const handleProviderLogin = (restaurant, password) => {
+  setError("");
+
+  const users = getUsers();
+
+  const user = users.find(
+    (item) =>
+      item.role === "provider" &&
+      (item.restaurantName || item.name).toLowerCase() ===
+        restaurant.name.toLowerCase() &&
+      item.password === password &&
+      item.licenseVerificationStatus === "demo-verified"
+  );
+
+  if (!user) {
+    setError(
+      "Invalid restaurant name or password, or verification is incomplete."
+    );
+    return;
+  }
+
+  onLogin({
+    role: "provider",
+    id: user.id,
+    name: user.name,
+  });
+
+  navigate("/provider/dashboard", { replace: true });
+};
 const handleLogin = (event) => {
   event.preventDefault();
 
@@ -123,6 +151,7 @@ const handleLogin = (event) => {
 };
 
   const handleSignup = (event) => {
+    
     event.preventDefault();
     if (role === "provider" && verificationStatus !== "verified") {
         setError("Please complete demo licence verification before signing up.");
@@ -191,9 +220,16 @@ const existingVerifiedProvider =
   );
 
   
-if (role === "provider" && !selectedRestaurant) {
+
+ if (
+  role === "provider" &&
+  !selectedRestaurant &&
+  mode === "login"
+) {
   return (
     <RestaurantSearch
+      mode={mode}
+      onProviderLogin={handleProviderLogin}
       onContinue={(restaurant) => {
         setSelectedRestaurant(restaurant);
         setError("");
@@ -226,6 +262,7 @@ if (role === "provider" && !selectedRestaurant) {
     />
   );
 }
+
 
   // const isProviderVerified = verificationStatus === "verified";
   // const [providerReadyForSignup, setProviderReadyForSignup] = useState(false);
