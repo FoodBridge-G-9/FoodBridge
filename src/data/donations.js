@@ -1,3 +1,6 @@
+const deadlineInHours = (hours) =>
+  new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+
 export const initialDonations = [
   {
     id: 1,
@@ -9,11 +12,12 @@ export const initialDonations = [
     provider: "Green Leaf Bakery",
     providerId: "green-leaf-bakery",
     location: "Sector 18",
-    pickupDeadline: "Today, 10:30 PM",
+    pickupDeadline: deadlineInHours(2.5),
     description:
-      "Fresh vegetable sandwiches prepared for an event. Best collected tonight.",
+      "Fresh vegetable sandwiches prepared for an event. Best collected soon.",
     status: "Available",
     accent: "🥪",
+    createdAt: new Date().toISOString(),
   },
   {
     id: 2,
@@ -25,11 +29,12 @@ export const initialDonations = [
     provider: "Saffron Table",
     providerId: "saffron-table",
     location: "Sector 15",
-    pickupDeadline: "Today, 11:15 PM",
+    pickupDeadline: deadlineInHours(5),
     description:
       "Packed dal, rice and seasonal vegetables remaining after dinner service.",
     status: "Available",
     accent: "🍱",
+    createdAt: new Date().toISOString(),
   },
   {
     id: 3,
@@ -41,11 +46,12 @@ export const initialDonations = [
     provider: "Green Leaf Bakery",
     providerId: "green-leaf-bakery",
     location: "Sector 22",
-    pickupDeadline: "Tomorrow, 8:00 AM",
+    pickupDeadline: deadlineInHours(12),
     description:
-      "Unsold bread loaves and buns from the evening production batch.",
+      "Unsold bread loaves and buns from the latest production batch.",
     status: "Available",
     accent: "🍞",
+    createdAt: new Date().toISOString(),
   },
   {
     id: 4,
@@ -57,10 +63,11 @@ export const initialDonations = [
     provider: "Urban Bites Catering",
     providerId: "urban-bites-catering",
     location: "Sector 21",
-    pickupDeadline: "Today, 10:00 PM",
+    pickupDeadline: deadlineInHours(1.5),
     description: "Sealed paneer wraps left over from a corporate event.",
     status: "Available",
     accent: "🌯",
+    createdAt: new Date().toISOString(),
   },
   {
     id: 5,
@@ -72,10 +79,11 @@ export const initialDonations = [
     provider: "Harvest Cafe",
     providerId: "harvest-cafe",
     location: "Sector 17",
-    pickupDeadline: "Today, 9:30 PM",
+    pickupDeadline: deadlineInHours(3.5),
     description: "Fresh mixed fruit cups from a cancelled meeting order.",
     status: "Available",
     accent: "🍎",
+    createdAt: new Date().toISOString(),
   },
   {
     id: 6,
@@ -87,11 +95,12 @@ export const initialDonations = [
     provider: "Celebration Caterers",
     providerId: "celebration-caterers",
     location: "Sector 12",
-    pickupDeadline: "Tomorrow, 9:00 AM",
+    pickupDeadline: deadlineInHours(20),
     description:
       "Vegetarian snacks and mains remaining after a community celebration.",
     status: "Available",
     accent: "🎉",
+    createdAt: new Date().toISOString(),
   },
   {
     id: 7,
@@ -103,11 +112,12 @@ export const initialDonations = [
     provider: "Spice Junction",
     providerId: "spice-junction",
     location: "Sector 29",
-    pickupDeadline: "Today, 9:45 PM",
+    pickupDeadline: deadlineInHours(1),
     description:
-      "Large batch of vegetable biryani left over from a catering order.",
+      "A large batch of vegetable biryani left over from a catering order.",
     status: "Available",
     accent: "🍛",
+    createdAt: new Date().toISOString(),
   },
   {
     id: 8,
@@ -119,10 +129,11 @@ export const initialDonations = [
     provider: "Sweet Crumbs Bakery",
     providerId: "sweet-crumbs-bakery",
     location: "Sector 10",
-    pickupDeadline: "Today, 7:00 PM",
-    description: "A mixed box of cupcakes.",
+    pickupDeadline: deadlineInHours(0.75),
+    description: "A mixed box of cupcakes ready for collection.",
     status: "Available",
     accent: "🧁",
+    createdAt: new Date().toISOString(),
   },
 ];
 
