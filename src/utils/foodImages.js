@@ -26,15 +26,14 @@ const foodNameImages = {
     "dal & rice meals":
   "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=900&q=85",
 
-  "Vegetable Biryani":
-  "https://commons.wikimedia.org/wiki/Special:FilePath/Veg%20Biryani.jpg?width=900",
+  "vegetable biryani":
+  "https://images.unsplash.com/photo-1589302168068-964664d93dc0",
 
 "Chole Bhature":
   "https://commons.wikimedia.org/wiki/Special:FilePath/A%20Plate%20of%20Chole%20Bhature.JPG?width=900",
 
 "Mixed Celebration Platter":
-  "https://commons.wikimedia.org/wiki/Special:FilePath/Indian%20vegetarian%20thali.jpg?width=900",
-
+  "https://images.unsplash.com/photo-1671510206533-6a8d5f8e0a3c?auto=format&fit=crop&w=900&q=85",
   
   "egg curry":
     "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=900&q=85",
