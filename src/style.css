@@ -2139,3 +2139,89 @@ p.form-error,
 }
 
 
+.restaurant-search-field {
+  position: relative;
+}
+
+.restaurant-search-field input {
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.restaurant-search-field input:focus {
+  outline: none;
+  border-color: #8fc9a5;
+  box-shadow: 0 0 0 3px rgba(143, 201, 165, 0.15);
+}
+
+.restaurant-suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #163c30;
+  border: 1px solid #416b57;
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+}
+
+.restaurant-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #ffffff;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.restaurant-suggestion:hover,
+.restaurant-suggestion:focus-visible {
+  background: #285541;
+  outline: none;
+}
+
+.suggestion-icon {
+  font-size: 18px;
+}
+.auth-message {
+  background: #183d32;
+  color: #ffffff;
+  border: 1px solid #477b65;
+  border-left: 4px solid #80b89a;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 12px 0;
+  font-size: 14px;
+}
+
+.auth-message p {
+  margin: 5px 0 0;
+  color: #e3eee8;
+  line-height: 1.5;
+}
+
+
+.form-error {
+  background: #183d32;
+  color: #ffffff;
+  border: 1px solid #477b65;
+  border-left: 4px solid #80b89a;
+  border-radius: 10px;
+  padding: 12px 15px;
+  margin: 10px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
