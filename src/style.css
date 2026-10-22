@@ -2610,7 +2610,7 @@ textarea:focus {
   position: relative;
   width: min(360px, 85%);
   padding: 30px;
-  z-index: 2;
+  z-index: 1;
 }
 .mini-label {
   color: var(--muted);
@@ -2687,12 +2687,13 @@ textarea:focus {
   border-radius: 12px;
 }
 .floating-card-top {
-  top: 9%;
+  top: 2%;
   right: 2%;
 }
 .floating-card-bottom {
-  left: 0;
-  bottom: 9%;
+  left: -35px;
+  bottom: 0;
+  z-index: 0;
 }
 .hero-shape {
   position: absolute;
@@ -4458,4 +4459,112 @@ button.verification-button.button-primary:hover {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Animate only the outer card */
+.hero-card-main,
+.floating-card-top,
+.floating-card-bottom {
+  animation-fill-mode: both;
+  backface-visibility: hidden;
+}
+
+/* Keep every child attached to its card */
+.floating-card,
+.floating-card *,
+.hero-card-main,
+.hero-card-main * {
+  animation-play-state: running;
+}
+
+/* Smooth, subtle movement */
+.hero-card-main {
+  animation: foodCardFloat 5s ease-in-out infinite;
+}
+
+.floating-card-top {
+  animation: matchedCardFloat 5s ease-in-out infinite;
+}
+
+.floating-card-bottom {
+  animation: rescuedCardFloat 5s ease-in-out infinite;
+}
+
+@keyframes foodCardFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -7px, 0);
+  }
+}
+
+@keyframes matchedCardFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, 6px, 0);
+  }
+}
+
+@keyframes rescuedCardFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, 6px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-card-main,
+  .floating-card-top,
+  .floating-card-bottom {
+    animation: none !important;
+  }
+}
+
+/* Smooth hover effects for food cards */
+.food-card {
+  overflow: hidden;
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+  border: 1px solid rgba(82, 220, 155, 0.18);
+}
+
+/* Zoom the food image smoothly */
+.food-card img {
+  transition: transform 0.4s ease;
+}
+
+/* Lift the card and add a bright green glow */
+.food-card:hover {
+  transform: translateY(-7px);
+  border-color: #39ff9c;
+  box-shadow:
+    0 0 0 1px rgba(57, 255, 156, 0.45),
+    0 0 18px rgba(57, 255, 156, 0.28),
+    0 12px 30px rgba(0, 0, 0, 0.28);
+}
+
+/* Slight zoom-in effect on the image */
+.food-card:hover img {
+  transform: scale(1.2);
+}
+
+.food-card-visual {
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.food-card-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
