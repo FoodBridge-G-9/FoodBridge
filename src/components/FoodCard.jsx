@@ -1,12 +1,11 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { getFoodImage } from "../utils/foodImages";
-import {
-  formatDeadline,
-  isDeadlinePassed,
-} from "../utils/donationUtils";
+import { formatDeadline, isDeadlinePassed } from "../utils/donationUtils";
 import DeadlineBadge from "./DeadlineBadge";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import { STORAGE_KEYS } from "../utils/storage";
+import { getProviderRatingSummary } from "../utils/providerRatings";
 
 function getStatusLabel(donation) {
   if (
@@ -28,12 +27,13 @@ export default function FoodCard({
   disabled = false,
   statusLabel: customStatusLabel,
 }) {
+  const [reviews] = useLocalStorage(STORAGE_KEYS.reviews, []);
+  const rating = getProviderRatingSummary(reviews, donation.providerId);
+
   const statusLabel = customStatusLabel || getStatusLabel(donation);
   const available = statusLabel === "Available" && !disabled;
 
-  const unavailableClass = available
-    ? ""
-    : "food-card-unavailable";
+  const unavailableClass = available ? "" : "food-card-unavailable";
 
   return (
     <article
@@ -64,6 +64,22 @@ export default function FoodCard({
         <h3>{donation.foodName}</h3>
         <p className="food-provider">{donation.provider}</p>
 
+        <p
+          className="food-provider-rating"
+          aria-label="Provider average rating and review count"
+        >
+          {rating.count > 0 ? (
+            <>
+              ★ {rating.average.toFixed(1)}{" "}
+              <span>
+                ({rating.count} {rating.count === 1 ? "review" : "reviews"})
+              </span>
+            </>
+          ) : (
+            <span>Not rated yet</span>
+          )}
+        </p>
+
         <div className="food-meta">
           <span>
             📦 {donation.quantity} {donation.unit}
@@ -77,32 +93,27 @@ export default function FoodCard({
           </span>
 
           {available && (
-            <DeadlineBadge
-              deadline={donation.pickupDeadline}
-              compact
-            />
+            <DeadlineBadge deadline={donation.pickupDeadline} compact />
           )}
         </div>
 
-        
-<div className="food-card-footer">
-  {available ? (
-    <Link className="text-link" to={`/food/${donation.id}`}>
-      View details →
-    </Link>
-  ) : (
-    <span className="text-link" aria-disabled="true">
-      {statusLabel === "Expired"
-        ? "Expired"
-        : statusLabel === "Claimed"
-          ? "Already claimed"
-          : statusLabel === "Picked up"
-            ? "Already picked up"
-            : "Unavailable"}
-    </span>
-  )}
-</div>
-
+        <div className="food-card-footer">
+          {available ? (
+            <Link className="text-link" to={`/food/${donation.id}`}>
+              View details →
+            </Link>
+          ) : (
+            <span className="text-link" aria-disabled="true">
+              {statusLabel === "Expired"
+                ? "Expired"
+                : statusLabel === "Claimed"
+                  ? "Already claimed"
+                  : statusLabel === "Picked up" || statusLabel === "Picked Up"
+                    ? "Already picked up"
+                    : "Unavailable"}
+            </span>
+          )}
+        </div>
       </div>
     </article>
   );

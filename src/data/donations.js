@@ -25,7 +25,7 @@ export const initialDonations = [
   },
   {
     id: 2,
-    foodName: "dal & rice meals",
+    foodName: "Dal & Rice Meals",
     category: "Cooked Meals",
     quantity: 65,
     unit: "meal boxes",
@@ -54,11 +54,11 @@ export const initialDonations = [
     provider: "Green Leaf Bakery",
     providerId: "green-leaf-bakery",
     location: "Sector 22",
-    coordinates: {
+        coordinates: {
       latitude: 30.7352,
       longitude: 76.7722,
     },
-    pickupDeadline: deadlineInHours(12),
+    pickupDeadline: deadlineInHours(12.25),
     description:
       "Unsold bread loaves and buns from the latest production batch.",
     status: "Available",
@@ -95,11 +95,11 @@ export const initialDonations = [
     provider: "Harvest Cafe",
     providerId: "harvest-cafe",
     location: "Sector 17",
-    coordinates: {
+        coordinates: {
       latitude: 30.7398,
       longitude: 76.7827,
     },
-    pickupDeadline: deadlineInHours(3.5),
+    pickupDeadline: deadlineInHours(3.2),
     description: "Fresh mixed fruit cups from a cancelled meeting order.",
     status: "Available",
     accent: "🍎",

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -27,37 +26,33 @@ export default function Navbar() {
   };
 
   const dashboardPath =
-    session?.role === "provider"
-      ? "/provider/dashboard"
-      : "/ngo/dashboard";
+    session?.role === "provider" ? "/provider/dashboard" : "/ngo/dashboard";
 
   // Provider's donations
   const myDonations = useMemo(
     () =>
       donations.filter(
-        (donation) => String(donation.providerId) === String(session?.id)
+        (donation) => String(donation.providerId) === String(session?.id),
       ),
-    [donations, session?.id]
+    [donations, session?.id],
   );
 
   const myDonationIds = useMemo(
     () => new Set(myDonations.map((donation) => String(donation.id))),
-    [myDonations]
+    [myDonations],
   );
 
   // Requests received by this provider
   const incomingRequests = useMemo(
     () =>
       requests
-        .filter((request) =>
-          myDonationIds.has(String(request.donationId))
-        )
+        .filter((request) => myDonationIds.has(String(request.donationId)))
         .sort(
           (a, b) =>
             new Date(b.createdAt || 0).getTime() -
-            new Date(a.createdAt || 0).getTime()
+            new Date(a.createdAt || 0).getTime(),
         ),
-    [requests, myDonationIds]
+    [requests, myDonationIds],
   );
 
   const activeRequests = useMemo(
@@ -66,54 +61,50 @@ export default function Navbar() {
         if (request.status !== "Requested") return false;
 
         const donation = myDonations.find(
-          (item) => String(item.id) === String(request.donationId)
+          (item) => String(item.id) === String(request.donationId),
         );
 
         return donation && donation.status === "Available";
       }),
-    [incomingRequests, myDonations]
+    [incomingRequests, myDonations],
   );
 
   // Accepted/declined requests belonging to this NGO
-  
-
-const ngoNotifications = useMemo(
-  () =>
-    requests
-      .filter(
-        (request) =>
-          String(request.ngoId) === String(session?.id)
-      )
-      .map((request) => {
-        const donation = donations.find(
-          (item) =>
-            String(item.id) === String(request.donationId)
-        );
-
-        const expired =
-          donation?.status === "Expired" ||
-          (donation?.pickupDeadline &&
-            new Date(donation.pickupDeadline).getTime() <= Date.now());
-
-        return {
-          ...request,
-          notificationType: expired ? "Expired" : request.status,
-        };
-      })
-      .filter((request) =>
-        ["Accepted", "Declined", "Expired"].includes(
-          request.notificationType
+  const ngoNotifications = useMemo(
+    () =>
+      requests
+        .filter(
+          (request) =>
+            String(request.ngoId) === String(session?.id),
         )
-      )
-      .sort(
-        (a, b) =>
-          new Date(b.updatedAt || b.createdAt || 0).getTime() -
-          new Date(a.updatedAt || a.createdAt || 0).getTime()
-      ),
-  [requests, session?.id, donations]
-);
+        .map((request) => {
+          const donation = donations.find(
+            (item) =>
+              String(item.id) === String(request.donationId),
+          );
 
+          const expired =
+            donation?.status === "Expired" ||
+            (donation?.pickupDeadline &&
+              new Date(donation.pickupDeadline).getTime() <= Date.now());
 
+          return {
+            ...request,
+            notificationType: expired ? "Expired" : request.status,
+          };
+        })
+        .filter((request) =>
+          ["Accepted", "Declined", "Expired"].includes(
+            request.notificationType,
+          ),
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.updatedAt || b.createdAt || 0).getTime() -
+            new Date(a.updatedAt || a.createdAt || 0).getTime(),
+        ),
+    [requests, session?.id, donations],
+  );
 
   const isProvider = session?.role === "provider";
   const isNgo = session?.role === "ngo";
@@ -180,9 +171,7 @@ const ngoNotifications = useMemo(
                 className="notification-button"
                 aria-label={`${notificationCount} notifications`}
                 aria-expanded={notificationsOpen}
-                onClick={() =>
-                  setNotificationsOpen((current) => !current)
-                }
+                onClick={() => setNotificationsOpen((current) => !current)}
               >
                <span
                 className={`notification-icon ${
@@ -223,20 +212,18 @@ const ngoNotifications = useMemo(
                       activeRequests.map((request) => {
                         const donation = myDonations.find(
                           (item) =>
-                            String(item.id) === String(request.donationId)
+                            String(item.id) === String(request.donationId),
                         );
 
                         return (
-                          <div
-                            className="notification-item"
-                            key={request.id}
-                          >
+                          <div className="notification-item" key={request.id}>
                             <strong>New food request</strong>
                             <p>
                               {request.ngoName || "An NGO"} requested{" "}
                               {donation?.foodName ||
                                 request.donationName ||
-                                "your donation"}.
+                                "your donation"}
+                              .
                             </p>
                           </div>
                         );
@@ -246,51 +233,44 @@ const ngoNotifications = useMemo(
                     <p>No request updates yet.</p>
                   ) : (
                     
-ngoNotifications.map((request) => {
-  const expired = request.notificationType === "Expired";
-  const accepted = request.status === "Accepted" && !expired;
+                  ngoNotifications.map((request) => {
+                    const expired = request.notificationType === "Expired";
+                    const accepted = request.status === "Accepted" && !expired;
 
-  return (
-    <div className="notification-item" key={request.id}>
-      <strong>
-        {expired
-          ? "Food item expired ⏰"
-          : accepted
-            ? "Request accepted ✓"
-            : "Request declined"}
-      </strong>
+                      return (
+                        <div className="notification-item" key={request.id}>
+                          <strong>
+                            {expired
+                              ? "Food item expired ⏰"
+                              : accepted
+                                ? "Request accepted ✓"
+                                : "Request declined"}
+                          </strong>
 
-      <p>
-        {expired
-          ? `We regret to inform you that the food item "${
-              request.donationName || "you requested"
-            }" has expired and is no longer available for collection. We apologize for the inconvenience. Please explore other available donations.`
-          : `Your request for ${
-              request.donationName || "food donation"
-            } ${
-              accepted
-                ? "has been accepted by the provider."
-                : "has been declined by the provider."
-            }`}
-      </p>
-    </div>
-  );
-}
-)
-
-                  )
-                  }
+                          <p>
+                            {expired
+                              ? `We regret to inform you that the food item "${
+                                  request.donationName || "you requested"
+                                }" has expired and is no longer available for collection. We apologize for the inconvenience. Please explore other available donations.`
+                              : `Your request for ${
+                                  request.donationName || "food donation"
+                                } ${
+                                  accepted
+                                    ? "has been accepted by the provider."
+                                    : "has been declined by the provider."
+                                }`}
+                          </p>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               )}
             </div>
           )}
 
           {session && (
-            <button
-              className="nav-logout"
-              type="button"
-              onClick={handleLogout}
-            >
+            <button className="nav-logout" type="button" onClick={handleLogout}>
               Log out
             </button>
           )}
