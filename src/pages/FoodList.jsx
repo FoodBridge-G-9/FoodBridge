@@ -180,7 +180,9 @@ import FoodCard from "../components/FoodCard";
 import SectionHeading from "../components/SectionHeading";
 import { useSelector } from "react-redux";
 import { isDonationAvailable, parseDeadline } from "../utils/donationUtils";
-
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import { useSessionContext } from "../context/SessionContext";
+import { STORAGE_KEYS } from "../utils/storage";
 const SORT_OPTIONS = [
   { value: "urgent", label: "Pickup deadline: soonest" },
   { value: "newest", label: "Newest listings" },
@@ -197,6 +199,8 @@ export default function FoodList() {
   const [sortBy, setSortBy] = useState("urgent");
   const [showUrgentOnly, setShowUrgentOnly] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const { session } = useSessionContext();
+const [requests] = useLocalStorage(STORAGE_KEYS.requests, []);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => setNow(Date.now()), 30_000);
@@ -204,9 +208,17 @@ export default function FoodList() {
   }, []);
 
   const availableDonations = useMemo(
-    () => donations.filter((donation) => isDonationAvailable(donation, now)),
-    [donations, now],
-  );
+  () =>
+    donations.filter((donation) => {
+      const deadline = parseDeadline(donation.pickupDeadline);
+
+      return (
+        donation.status !== "Expired" &&
+        (deadline === null || deadline > now)
+      );
+    }),
+  [donations, now],
+);
 
   const categories = useMemo(
     () => [
@@ -402,9 +414,43 @@ export default function FoodList() {
 
           {filteredDonations.length > 0 ? (
             <div className="food-grid">
-              {filteredDonations.map((donation) => (
-                <FoodCard donation={donation} key={donation.id} />
-              ))}
+              {filteredDonations.map((donation) => {
+  const myRequest = requests.find(
+    (request) =>
+      String(request.donationId) === String(donation.id) &&
+      String(request.ngoId) === String(session?.id),
+  );
+
+  const alreadyClaimed = ["Claimed", "Picked Up"].includes(
+    donation.status,
+  );
+
+  const requestPending = myRequest?.status === "Requested";
+  const requestAccepted = myRequest?.status === "Accepted";
+
+  const disabled =
+    alreadyClaimed ||
+    requestPending ||
+    requestAccepted ||
+    donation.status === "Expired";
+
+  return (
+    <FoodCard
+      donation={donation}
+      key={donation.id}
+      disabled={disabled}
+      statusLabel={
+        alreadyClaimed
+          ? "Claimed"
+          : requestPending
+            ? "Request Pending"
+            : requestAccepted
+              ? "Claimed"
+              : undefined
+      }
+    />
+  );
+})}
             </div>
           ) : (
             <div className="empty-state">

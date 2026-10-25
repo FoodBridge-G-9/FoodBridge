@@ -1,7 +1,11 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { getFoodImage } from "../utils/foodImages";
-import { formatDeadline, isDeadlinePassed } from "../utils/donationUtils";
+import {
+  formatDeadline,
+  isDeadlinePassed,
+} from "../utils/donationUtils";
 import DeadlineBadge from "./DeadlineBadge";
 
 function getStatusLabel(donation) {
@@ -18,13 +22,22 @@ function getStatusLabel(donation) {
   return donation.status || "Available";
 }
 
-export default function FoodCard({ donation }) {
-  const statusLabel = getStatusLabel(donation);
-  const available = statusLabel === "Available";
+export default function FoodCard({
+  donation,
+  disabled = false,
+  statusLabel: customStatusLabel,
+}) {
+  const statusLabel = customStatusLabel || getStatusLabel(donation);
+  const available = statusLabel === "Available" && !disabled;
+
+  const unavailableClass = available
+    ? ""
+    : "food-card-unavailable";
 
   return (
     <article
-      className={`food-card ${available ? "" : "food-card-unavailable"}`}
+      className={`food-card ${unavailableClass}`}
+      aria-disabled={!available}
     >
       <div className="food-card-visual">
         <img
@@ -32,10 +45,6 @@ export default function FoodCard({ donation }) {
           alt={`${donation.foodName || donation.category} donation`}
           loading="lazy"
         />
-
-        <span className="food-image-label">
-          {donation.category || "Food Donation"}
-        </span>
       </div>
 
       <div className="food-card-body">
@@ -67,15 +76,18 @@ export default function FoodCard({ donation }) {
           </span>
 
           {available && (
-            <DeadlineBadge deadline={donation.pickupDeadline} compact />
+            <DeadlineBadge
+              deadline={donation.pickupDeadline}
+              compact
+            />
           )}
         </div>
 
         <div className="food-card-footer">
-          <Link className="text-link" to={`/food/${donation.id}`}>
-            View details →
-          </Link>
-        </div>
+        <Link className="text-link" to={`/food/${donation.id}`}>
+          View details →
+        </Link>
+      </div>
       </div>
     </article>
   );

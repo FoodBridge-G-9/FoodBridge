@@ -1,55 +1,22 @@
-// import { useEffect, useState } from "react";
-
-// export function useLocalStorage(key, initialValue) {
-//   const [value, setValue] = useState(() => {
-//     try {
-//       const saved = localStorage.getItem(key);
-//       return saved ? JSON.parse(saved) : initialValue;
-//     } catch {
-//       return initialValue;
-//     }
-//   });
-
-//   useEffect(() => {
-//     try {
-//       localStorage.setItem(key, JSON.stringify(value));
-//     } catch {
-//       // Storage may be full or unavailable (e.g. private browsing) — fail silently.
-//     }
-//   }, [key, value]);
-
-//   // Keeps this piece of state in sync if the same key changes in another
-//   // browser tab (e.g. an NGO dashboard open in one tab, a provider dashboard
-//   // open in another).
-//   useEffect(() => {
-//     const handleStorage = (event) => {
-//       if (event.key !== key) return;
-//       try {
-//         setValue(event.newValue ? JSON.parse(event.newValue) : initialValue);
-//       } catch {
-//         setValue(initialValue);
-//       }
-//     };
-//     window.addEventListener("storage", handleStorage);
-//     return () => window.removeEventListener("storage", handleStorage);
-//   }, [key, initialValue]);
-
-//   return [value, setValue];
-// }
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+const LOCAL_STORAGE_EVENT = "foodbridge-local-storage-change";
+
 export function useLocalStorage(key, initialValue) {
-  // Keep the fallback stable even when a caller passes [] or {} inline.
   const initialValueRef = useRef(initialValue);
 
   const readValue = useCallback(() => {
     try {
       const saved = window.localStorage.getItem(key);
-      if (saved !== null) return JSON.parse(saved);
+
+      if (saved !== null) {
+        return JSON.parse(saved);
+      }
     } catch (error) {
       console.warn(`Could not read localStorage key "${key}".`, error);
     }
+
     return typeof initialValueRef.current === "function"
       ? initialValueRef.current()
       : initialValueRef.current;
@@ -65,16 +32,33 @@ export function useLocalStorage(key, initialValue) {
     (nextValue) => {
       setValue((currentValue) => {
         const resolvedValue =
-          typeof nextValue === "function" ? nextValue(currentValue) : nextValue;
+          typeof nextValue === "function"
+            ? nextValue(currentValue)
+            : nextValue;
+
         try {
-          window.localStorage.setItem(key, JSON.stringify(resolvedValue));
+          window.localStorage.setItem(
+            key,
+            JSON.stringify(resolvedValue)
+          );
+
+          // Notify other hook instances in the same tab.
+          window.dispatchEvent(
+            new CustomEvent(LOCAL_STORAGE_EVENT, {
+              detail: { key },
+            })
+          );
         } catch (error) {
-          console.warn(`Could not save localStorage key "${key}".`, error);
+          console.warn(
+            `Could not save localStorage key "${key}".`,
+            error
+          );
         }
+
         return resolvedValue;
       });
     },
-    [key],
+    [key]
   );
 
   useEffect(() => {
@@ -82,8 +66,25 @@ export function useLocalStorage(key, initialValue) {
       if (event.key !== key && event.key !== null) return;
       setValue(readValue());
     };
+
+    const handleLocalStorageChange = (event) => {
+      if (event.detail?.key !== key) return;
+      setValue(readValue());
+    };
+
     window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    window.addEventListener(
+      LOCAL_STORAGE_EVENT,
+      handleLocalStorageChange
+    );
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener(
+        LOCAL_STORAGE_EVENT,
+        handleLocalStorageChange
+      );
+    };
   }, [key, readValue]);
 
   return [value, setAndPersistValue];

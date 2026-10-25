@@ -84,6 +84,15 @@ export default function FoodDetails() {
 
   const expired =
     donation.status === "Expired" || isDeadlinePassed(donation.pickupDeadline);
+    const displayStatus =
+  donation.status === "Picked Up"
+    ? "Picked Up"
+    : donation.status === "Claimed" ||
+        currentRequest?.status === "Accepted"
+      ? "Claimed"
+      : expired
+        ? "Expired"
+        : "Available";
 
   const isOwnListing =
     session?.role === "provider" &&
@@ -155,22 +164,42 @@ export default function FoodDetails() {
 
         <div className="details-layout">
           <div className="food-details-image">
-            <img
-              src={getFoodImage(donation)}
-              alt={`${donation.foodName || donation.category} donation`}
-            />
-            <span className="food-image-label">
-              {donation.category || "Food Donation"}
-            </span>
-          </div>
+          <img
+            src={getFoodImage(donation)}
+            alt={`${donation.foodName || donation.category} donation`}
+          />
+        </div>
 
           <div className="details-content">
             <div className="details-title-row">
-              <span className="tag">
-                {donation.foodType || donation.category}
-              </span>
-              <DeadlineBadge deadline={donation.pickupDeadline} />
-            </div>
+  <span className="tag">
+    {donation.foodType || donation.category}
+  </span>
+
+  {displayStatus === "Available" && (
+    <DeadlineBadge deadline={donation.pickupDeadline} />
+  )}
+</div>
+
+{displayStatus !== "Available" && (
+  <div
+    className={`food-details-status status-${displayStatus
+      .toLowerCase()
+      .replace(/\s+/g, "-")}`}
+  >
+    <span className="food-details-status-dot" />
+    <div>
+      <strong>{displayStatus}</strong>
+      <p>
+        {displayStatus === "Claimed"
+          ? "This food has been reserved by an NGO."
+          : displayStatus === "Picked Up"
+            ? "This food has been collected successfully."
+            : "The pickup deadline has passed."}
+      </p>
+    </div>
+  </div>
+)}
 
             <h1>{donation.foodName}</h1>
 
@@ -217,18 +246,24 @@ export default function FoodDetails() {
                 ⏰ This pickup window has expired. Please explore other
                 available donations.
               </div>
-            ) : isOwnListing ? (
-              <div className="info-box">
-                This is your listing. Open your provider dashboard to review NGO
-                requests.
-              </div>
-            ) : currentRequest?.status === "Accepted" ? (
-              <div className="success-box" role="status">
-                ✓ Your NGO's request was accepted.
-                {donation.status === "Picked Up"
-                  ? " Pickup is complete — thank you for rescuing this food!"
-                  : " Coordinate with the provider and collect the food before the deadline."}
-              </div>
+            ) : donation.status === "Picked Up" ? (
+            <div className="success-box" role="status">
+              ✓ This donation has been picked up.
+            </div>
+          ) : donation.status === "Claimed" ? (
+            <div className="success-box" role="status">
+              ✓ This donation has been claimed by an NGO.
+            </div>
+          ) : isOwnListing ? (
+            <div className="info-box">
+              This is your listing. Open your provider dashboard to review NGO
+              requests.
+            </div>
+          ) : currentRequest?.status === "Accepted" ? (
+            <div className="success-box" role="status">
+              ✓ Your NGO's request was accepted. Coordinate with the provider
+              and collect the food before the deadline.
+            </div>
             ) : currentRequest?.status === "Requested" ? (
               <div className="success-box" role="status">
                 ✓ Your request has been sent and is waiting for the provider's

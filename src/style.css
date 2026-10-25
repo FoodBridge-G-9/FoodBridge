@@ -4256,5 +4256,429 @@ p.form-error,
   font-size: 14px;
   line-height: 1.5;
 }
+.signup-welcome-text {
+  color: #ffffff;
+  opacity: 0.85;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+.form-error {
+  background-color: #183d32;
+  color: #ffffff;
+  border: 1px solid #477b65;
+  border-left: 4px solid #80b89a;
+  border-radius: 10px;
+  padding: 12px 15px;
+  margin: 10px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
 
+/* Restaurant search field */
+.restaurant-search-field {
+  position: relative;
+  width: 100%;
+}
 
+.restaurant-search-field input {
+  width: 100%;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.restaurant-search-field input:focus {
+  border-color: #76a88b;
+  box-shadow: 0 0 0 3px rgba(118, 168, 139, 0.16);
+  outline: none;
+}
+
+/* Search results dropdown */
+.restaurant-suggestions {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 0;
+  right: 0;
+  z-index: 1000;
+
+  padding: 6px;
+  background: #102820;
+  border: 1px solid #355c49;
+  border-radius: 12px;
+
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.3);
+  max-height: 230px;
+  overflow-y: auto;
+
+  animation: restaurantDropdownIn 0.16s ease-out;
+}
+
+/* Individual restaurant result — no icon */
+.restaurant-suggestion {
+  display: block;
+  width: 100%;
+  padding: 13px 14px;
+
+  background: transparent;
+  color: #f4f8f5;
+  border: none;
+  border-radius: 8px;
+
+  text-align: left;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+
+  cursor: pointer;
+  transition: background 0.18s ease, padding-left 0.18s ease;
+}
+
+.restaurant-suggestion:hover,
+.restaurant-suggestion:focus-visible {
+  background: #234b39;
+  padding-left: 19px;
+  color: #ffffff;
+  outline: none;
+}
+
+/* Subtle divider between results */
+.restaurant-suggestion + .restaurant-suggestion {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Smooth dropdown entrance */
+@keyframes restaurantDropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scrollbar */
+.restaurant-suggestions::-webkit-scrollbar {
+  width: 5px;
+}
+
+.restaurant-suggestions::-webkit-scrollbar-thumb {
+  background: #527963;
+  border-radius: 10px;
+}
+
+.restaurant-suggestions::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Search results dropdown */
+.restaurant-results {
+  margin-top: 10px;
+  overflow: hidden;
+  border: 1px solid #527b5d;
+  border-radius: 12px;
+  background-color: #244b35;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.restaurant-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  padding: 15px 16px;
+  border: none;
+  border-bottom: 1px solid rgba(220, 240, 223, 0.13);
+  background-color: #244b35;
+  color: #ffffff;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background-color 0.2s ease;
+}
+
+.restaurant-option:last-child {
+  border-bottom: none;
+}
+
+.restaurant-option:hover,
+.restaurant-option:focus-visible {
+  background-color: #356747;
+  outline: none;
+}
+
+.restaurant-name {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.restaurant-location {
+  color: #d0e3d3;
+  font-size: 12px;
+}
+
+/* Selected restaurant */
+.selected-restaurant {
+  background-color: #294f38;
+  border: 1px solid #648c6c;
+}
+
+/* Registration notice */
+.registration-notice {
+  background-color: #294f38;
+  border-color: #648c6c;
+  color: #e1f0e3;
+}
+
+/* Notification button in navbar */
+
+/* Notification button in navbar */
+
+.notification-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.notification-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #f2d5bc;
+  border-radius: 50%;
+  background: #fff4e9;
+  color: #b95720;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notification-button:hover {
+  background: #fce3cd;
+  border-color: #e9a875;
+  transform: translateY(-1px);
+}
+
+.notification-icon {
+  font-size: 19px;
+  line-height: 1;
+}
+
+.notification-count {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  background: #e34d42;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 1000;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  padding: 16px;
+  background: #fffaf5;
+  border: 1px solid #f0dccb;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(80, 47, 25, 0.14);
+}
+
+.notification-dropdown h3 {
+  margin: 0 0 12px;
+  color: #a94f1d;
+  font-size: 16px;
+}
+
+.notification-dropdown > p {
+  color: #76665b;
+  font-size: 13px;
+}
+
+.notification-item {
+  padding: 12px 0;
+  border-top: 1px solid #f1e5da;
+}
+
+.notification-item strong {
+  color: #49352a;
+  font-size: 14px;
+}
+
+.notification-item p {
+  margin: 5px 0 0;
+  color: #76665b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.notification-button,
+.notification-button:hover,
+.notification-button:focus {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+  color: #254b3b;
+}
+
+.notification-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #254b3b;
+}
+
+.notification-count {
+  background: #e45b35 !important;
+  color: #ffffff !important;
+}
+
+.notification-count {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #22c55e;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  border: 2px solid #171717;
+  border-radius: 999px;
+  line-height: 1;
+}
+.notification-count {
+  background-color: #22c55e !important;
+  color: white;
+  border-radius: 50%;
+}
+
+/* Visually mute unavailable food cards */
+.food-card-unavailable {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transition: opacity 0.2s ease;
+}
+
+.food-card-unavailable:hover {
+  opacity: 0.75;
+}
+/* Food details status badge */
+.food-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.food-status-badge.status-claimed {
+  background: #fff0d6;
+  color: #945500;
+  font-size: 15px;
+}
+
+.food-status-badge.status-picked-up {
+  background: #dcfce7;
+  color: #166534;
+  font-size: 15px;
+}
+
+.food-status-badge.status-expired {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.details-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.food-details-status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: fit-content;
+  min-width: 280px;
+  margin: 18px 0 22px;
+  padding: 16px 22px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+}
+
+.food-details-status-dot {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.food-details-status strong {
+  display: block;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.food-details-status p {
+  margin: 5px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.food-details-status.status-claimed {
+  background: #e1f5e8;
+  border: 1px solid #b7e4c7;
+  border-radius: 12px;
+  padding: 16px 22px;
+  color: #166534;
+}
+
+.food-details-status.status-claimed strong {
+  color: #166534;
+}
+
+.food-details-status.status-claimed p {
+  color: #38734b;
+}
+
+.food-details-status-dot {
+  display: none;
+}
+
+.food-details-status.status-picked-up {
+  color: #166534;
+  background: #dcfce7;
+  border-color: #a7e4b8;
+}
+
+.food-details-status.status-expired {
+  color: #991b1b;
+  background: #fee2e2;
+  border-color: #fecaca;
+}
