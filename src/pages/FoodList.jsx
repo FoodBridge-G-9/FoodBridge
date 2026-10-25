@@ -192,78 +192,97 @@ export default function FoodList() {
       <section className="section">
         <div className="container">
           <div className="search-panel">
-            <label className="search-field">
-              <span aria-hidden="true">⌕</span>
-              <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search food, provider, location or details"
-                aria-label="Search food, provider, location or details"
-              />
-            </label>
+            {/* ROW 1: Search + Urgent filter */}
+            <div className="search-panel-top">
+              <label className="search-field">
+                <span aria-hidden="true">⌕</span>
+                <input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search food, provider, location or details"
+                  aria-label="Search food, provider, location or details"
+                />
+              </label>
 
-            <label className="filter-field">
-              <span className="filter-field-label">Category</span>
-              <select
-                value={category}
-                onChange={(event) => setCategory(event.target.value)}
-              >
-                {categories.map((item) => (
-                  <option key={item} value={item}>
-                    {item === "All" ? "All Categories" : item}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <label className="urgent-only-control">
+                <span className="urgent-only-icon" aria-hidden="true">
+                  ⏱
+                </span>
 
-            <label className="filter-field">
-              <span className="filter-field-label">Location</span>
-              <select
-                value={location}
-                onChange={(event) => setLocation(event.target.value)}
-              >
-                {locations.map((item) => (
-                  <option key={item} value={item}>
-                    {item === "All" ? "All Locations" : item}
-                  </option>
-                ))}
-              </select>
-            </label>
+                <span className="urgent-only-text">
+                  <span className="urgent-only-title">Urgent pickups only</span>
+                  <span className="urgent-only-subtitle">
+                    Prioritize food nearing its pickup deadline
+                  </span>
+                </span>
 
-            <label className="filter-field">
-              <span className="filter-field-label">Food type</span>
-              <select
-                value={foodType}
-                onChange={(event) => setFoodType(event.target.value)}
-              >
-                <option value="All">All Types</option>
-                <option value="Vegetarian">Vegetarian</option>
-                <option value="Non-Vegetarian">Non-Vegetarian</option>
-              </select>
-            </label>
+                <input
+                  type="checkbox"
+                  checked={showUrgentOnly}
+                  onChange={(event) => setShowUrgentOnly(event.target.checked)}
+                  aria-label="Show urgent pickups only"
+                />
 
-            <label className="filter-field">
-              <span className="filter-field-label">Sort by</span>
-              <select
-                value={sortBy}
-                onChange={(event) => setSortBy(event.target.value)}
-              >
-                {SORT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+                <span className="urgent-only-switch" />
+              </label>
+            </div>
 
-            <label className="urgent-only-control">
-              <input
-                type="checkbox"
-                checked={showUrgentOnly}
-                onChange={(event) => setShowUrgentOnly(event.target.checked)}
-              />
-              <span>Urgent pickups only</span>
-            </label>
+            {/* ROW 2: All dropdown filters */}
+            <div className="search-panel-filters">
+              <label className="filter-field">
+                <span className="filter-field-label">Category</span>
+                <select
+                  value={category}
+                  onChange={(event) => setCategory(event.target.value)}
+                >
+                  {categories.map((item) => (
+                    <option key={item} value={item}>
+                      {item === "All" ? "All Categories" : item}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="filter-field">
+                <span className="filter-field-label">Location</span>
+                <select
+                  value={location}
+                  onChange={(event) => setLocation(event.target.value)}
+                >
+                  {locations.map((item) => (
+                    <option key={item} value={item}>
+                      {item === "All" ? "All Locations" : item}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="filter-field">
+                <span className="filter-field-label">Food type</span>
+                <select
+                  value={foodType}
+                  onChange={(event) => setFoodType(event.target.value)}
+                >
+                  <option value="All">All Types</option>
+                  <option value="Vegetarian">Vegetarian</option>
+                  <option value="Non-Vegetarian">Non-Vegetarian</option>
+                </select>
+              </label>
+
+              <label className="filter-field">
+                <span className="filter-field-label">Sort by</span>
+                <select
+                  value={sortBy}
+                  onChange={(event) => setSortBy(event.target.value)}
+                >
+                  {SORT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
           </div>
 
           <div className="section-heading-row list-heading-row">
