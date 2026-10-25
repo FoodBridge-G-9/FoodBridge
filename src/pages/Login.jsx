@@ -852,19 +852,21 @@ if (!passwordPattern.test(password)) {
       Login as {role === "provider" ? "Provider" : "NGO"} →
     </button>
 
-    <button
-      type="button"
-      className="forgot-password-link"
-      onClick={() => {
-        clearMessages();
-        setForgotMode(true);
-        setResetEmail(email);
-        setResetPassword("");
-        setResetConfirmPassword("");
-      }}
-    >
-      Forgot Password?
-    </button>
+    
+<button
+  type="button"
+  className="forgot-password-link"
+  onClick={() => {
+    clearMessages();
+    setForgotMode(false);
+    setMessage(
+      "Password recovery is not configured yet. Please contact the FoodBridge administrator for assistance."
+    );
+  }}
+>
+  Forgot Password?
+</button>
+
   </>
 )}
           
