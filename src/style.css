@@ -4431,3 +4431,37 @@ button.verification-button:focus-visible {
     padding: 0;
   }
 }
+
+/* FoodBridge logo */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.logo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+  border-radius: 10px;
+}
+
+.logo-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.logo > span:last-child {
+  font-size: 1.2rem;
+  font-weight: 750;
+  color: var(--ink, #f0fff6);
+}

@@ -11,14 +11,8 @@ export default function Footer() {
             A simple way for surplus food to reach people who need it.
           </p>
         </div>
+        <div></div>
         <div>
-          
-        </div>
-        <div>
-          {/* <p className="footer-title">Built for FEE-II</p>
-          <p className="footer-small">
-            React · CSS3 · JavaScript · React Router
-          </p> */}
           <p className="footer-title">FoodBridge</p>
           <a href="/how-it-works">How It Works</a>
           <a href="/food">Find Food</a>
