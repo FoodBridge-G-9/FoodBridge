@@ -1,7 +1,9 @@
 
 import React from "react";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+// import PickupLocationPicker from "../components/PickupLocationPicker";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { STORAGE_KEYS } from "../utils/storage";
 import {
@@ -61,6 +63,9 @@ export default function ProviderDashboard() {
   }, [donations, dispatch]);
   const [requests, setRequests] = useLocalStorage(STORAGE_KEYS.requests, []);
   const [form, setForm] = useState(emptyForm);
+  const [providerLocation, setProviderLocation] = useState(null);
+const [locationMessage, setLocationMessage] = useState("");
+const [locationLoading, setLocationLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState("");
   const [formError, setFormError] = useState("");
@@ -150,6 +155,82 @@ export default function ProviderDashboard() {
       ...current,
       [event.target.name]: event.target.value,
     }));
+    
+const handleShareLocation = () => {
+  if (!navigator.geolocation) {
+    setLocationMessage(
+      "Location is not supported by this browser. Please enter your pickup location manually."
+    );
+    return;
+  }
+
+  setLocationLoading(true);
+  setLocationMessage("");
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const coordinates = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+        capturedAt: new Date().toISOString(),
+      };
+
+      setProviderLocation(coordinates);
+
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${coordinates.latitude}&lon=${coordinates.longitude}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Could not find the address.");
+        }
+
+        const data = await response.json();
+
+        const address =
+          data.display_name ||
+          `${coordinates.latitude}, ${coordinates.longitude}`;
+
+        setForm((current) => ({
+          ...current,
+          location: address,
+        }));
+
+        setLocationMessage(
+          "Location detected. You can edit the pickup address below."
+        );
+      } catch {
+        setLocationMessage(
+          "Coordinates captured, but the address could not be found. Please enter the pickup address manually."
+        );
+      } finally {
+        setLocationLoading(false);
+      }
+    },
+    (error) => {
+      let message =
+        "Could not get your location. Please enter the pickup location manually.";
+
+      if (error.code === error.PERMISSION_DENIED) {
+        message =
+          "Location permission denied. Allow location access in browser settings or enter the address manually.";
+      } else if (error.code === error.TIMEOUT) {
+        message = "Location request timed out. Please try again.";
+      }
+
+      setLocationMessage(message);
+      setLocationLoading(false);
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 60000,
+    }
+  );
+};
+
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
 
@@ -230,6 +311,10 @@ export default function ProviderDashboard() {
         id: editingId ?? Date.now(),
         provider: session.name,
         providerId: session.id,
+        coordinates:
+        providerLocation ??
+        existingDonation?.coordinates ??
+        null,
         quantity,
         status: editingId
           ? existingDonation?.status || "Available"
@@ -237,6 +322,8 @@ export default function ProviderDashboard() {
         imageUrl,
         accent: "🍲",
       };
+      console.log("Provider location state:", providerLocation);
+console.log("Coordinates being saved:", newDonation.coordinates);
       if (editingId !== null) {
         dispatch(updateDonation(newDonation));
         setMessage("Donation updated successfully!");
@@ -473,16 +560,76 @@ export default function ProviderDashboard() {
                   <option>cups</option>
                 </select>
               </label>
-              <label className="form-field">
-                <span>Pickup location *</span>
-                <input
-                  required
-                  name="location"
-                  value={form.location}
-                  onChange={handleChange}
-                  placeholder="e.g. Sector 18"
-                />
-              </label>
+              
+                
+<div className="form-field full pickup-location-field">
+  <span>Pickup location *</span>
+
+  <input
+    required
+    name="location"
+    value={form.location}
+    onChange={handleChange}
+    placeholder="e.g. Sector 18, Rajpura"
+  />
+
+  <small className="field-hint">
+    Enter the restaurant address or area where food can be collected.
+  </small>
+
+  
+<div className="location-action-row">
+  <button
+    type="button"
+    className="button button-secondary location-share-button"
+    onClick={handleShareLocation}
+    disabled={locationLoading}
+  >
+    {locationLoading
+      ? "Getting location..."
+      : providerLocation
+        ? "Refresh My Location"
+        : "Share My Location"}
+  </button>
+</div>
+
+{providerLocation && (
+  <div className="location-confirmation">
+    <div className="location-confirmation-icon">
+      <svg
+        viewBox="0 0 24 24"
+        width="25"
+        height="25"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" />
+        <circle cx="12" cy="10" r="2.5" />
+      </svg>
+    </div>
+
+    <div className="location-confirmation-copy">
+      <strong>Location shared</strong>
+      <span>
+        Your pickup coordinates are ready to be attached to your donation.
+      </span>
+    </div>
+
+    <span className="location-confirmation-check">✓</span>
+  </div>
+)}
+
+{locationMessage && !providerLocation && (
+  <div className="location-error-message" role="status" aria-live="polite">
+    {locationMessage}
+  </div>
+)}
+
+              </div>
               <label className="form-field">
                 <span>Pickup deadline *</span>
                 <input

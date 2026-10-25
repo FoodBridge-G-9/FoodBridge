@@ -160,7 +160,11 @@ export default function Navbar() {
                   setNotificationsOpen((current) => !current)
                 }
               >
-                <span className="notification-icon">
+               <span
+                className={`notification-icon ${
+                  notificationsOpen ? "active" : ""
+                }`}
+              >
                   <svg
                     width="20"
                     height="20"
