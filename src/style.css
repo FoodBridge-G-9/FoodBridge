@@ -5834,3 +5834,161 @@ p.form-error,
     font-size: 15px;
   }
 }
+
+/* Restaurant verification buttons */
+.verify-button,
+.verify-licence-button,
+button[type="submit"] {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+/* Primary verification button */
+.verify-button,
+.verify-licence-button {
+  background: #16a34a;
+  color: #ffffff;
+  border: none;
+  margin-top: 14px;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.16);
+}
+
+.verify-button:hover,
+.verify-licence-button:hover {
+  background: #15803d;
+  transform: translateY(-1px);
+}
+
+/* Back button */
+.verify-back-button,
+button.back-button {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: #263d36;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.verify-back-button:hover,
+button.back-button:hover {
+  background: #344e45;
+}
+/* Add clear space between verification buttons */
+.verify-button,
+.verify-licence-button,
+.verify-back-button,
+button.back-button {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.verify-back-button,
+button.back-button {
+  margin-top: 16px !important;
+}
+/* Space between verification and Back buttons */
+.signup-verification .verification-back-button {
+  display: block;
+  width: 100%;
+  margin-top: 16px !important;
+  box-sizing: border-box;
+}
+/* Set Up Your Account: separate Create Account and Back */
+.auth-card .signup-back-button {
+  display: block;
+  width: 100%;
+  margin-top: 18px !important;
+  box-sizing: border-box;
+}
+.forgot-password-link {
+  display: block;
+  margin: 12px 0 0 auto;
+  padding: 4px 0;
+  border: none;
+  background: transparent;
+  color: #f97316;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline;
+}
+
+.auth-card .forgot-password-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 46px;
+  margin: 0;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.auth-card .forgot-password-link:hover {
+  background: rgba(124, 247, 197, 0.12);
+  color: var(--mint);
+  text-decoration: none;
+}
+
+.auth-card .button-full + .forgot-password-link {
+  margin-top: 12px !important;
+}
+
+.auth-card .button-full + .forgot-password-link {
+  margin-top: 12px !important;
+}
+
+
+.auth-card .forgot-password-link {
+  border: 1px solid rgba(124, 247, 197, 0.4);
+  background: rgba(124, 247, 197, 0.08);
+  color: var(--mint);
+}
+
+.auth-card .forgot-password-link:hover {
+  border-color: var(--mint);
+  background: rgba(124, 247, 197, 0.16);
+  color: var(--mint);
+}
+
+/* Disable unavailable food details */
+.food-details-disabled .food-details-image img {
+  filter: grayscale(75%);
+  opacity: 0.65;
+}
+
+.food-details-disabled .details-content {
+  opacity: 0.72;
+}
+
+.food-details-disabled .details-content button {
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.5;
+}

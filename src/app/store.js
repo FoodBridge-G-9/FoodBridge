@@ -53,13 +53,25 @@ function loadDonations() {
     // Migrate older demo records whose deadline was stored as text such as
     // "Today, 10:30 PM" and therefore could not be parsed as a real date.
     return parsed.map((donation, index) => {
-      if (parseDeadline(donation.pickupDeadline) !== null) return donation;
-      return {
-        ...donation,
-        pickupDeadline: new Date(
-          Date.now() + (index + 2) * 60 * 60 * 1000,
-        ).toISOString(),
-      };
+      let record = donation;
+      if (parseDeadline(record.pickupDeadline) === null) {
+        record = {
+          ...record,
+          pickupDeadline: new Date(
+            Date.now() + (index + 2) * 60 * 60 * 1000,
+          ).toISOString(),
+        };
+      }
+      const initialMatch = initialDonations.find(
+        (item) => String(item.id) === String(record.id),
+      );
+      if (!record.coordinates && initialMatch?.coordinates) {
+        record = {
+          ...record,
+          coordinates: initialMatch.coordinates,
+        };
+      }
+      return record;
     });
   } catch {
     return initialDonations;

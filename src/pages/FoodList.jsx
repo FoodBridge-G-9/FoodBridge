@@ -207,18 +207,12 @@ const [requests] = useLocalStorage(STORAGE_KEYS.requests, []);
     return () => window.clearInterval(intervalId);
   }, []);
 
-  const availableDonations = useMemo(
-  () =>
-    donations.filter((donation) => {
-      const deadline = parseDeadline(donation.pickupDeadline);
-
-      return (
-        donation.status !== "Expired" &&
-        (deadline === null || deadline > now)
-      );
-    }),
-  [donations, now],
+  
+const availableDonations = useMemo(
+  () => donations,
+  [donations],
 );
+
 
   const categories = useMemo(
     () => [
@@ -428,26 +422,31 @@ const [requests] = useLocalStorage(STORAGE_KEYS.requests, []);
   const requestPending = myRequest?.status === "Requested";
   const requestAccepted = myRequest?.status === "Accepted";
 
-  const disabled =
-    alreadyClaimed ||
-    requestPending ||
-    requestAccepted ||
-    donation.status === "Expired";
+  const deadline = parseDeadline(donation.pickupDeadline);
 
+const expired =
+  donation.status === "Expired" ||
+  (deadline !== null && deadline <= now);
+
+const disabled =
+  alreadyClaimed ||
+  requestPending ||
+  requestAccepted ||
+  expired;
   return (
     <FoodCard
       donation={donation}
       key={donation.id}
       disabled={disabled}
       statusLabel={
-        alreadyClaimed
-          ? "Claimed"
-          : requestPending
-            ? "Request Pending"
-            : requestAccepted
-              ? "Claimed"
-              : undefined
-      }
+      expired
+    ? "Expired"
+    : alreadyClaimed || requestAccepted
+      ? "Claimed"
+      : requestPending
+        ? "Request Pending"
+        : undefined
+}
     />
   );
 })}

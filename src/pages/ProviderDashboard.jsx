@@ -322,8 +322,6 @@ const handleShareLocation = () => {
         imageUrl,
         accent: "🍲",
       };
-      console.log("Provider location state:", providerLocation);
-console.log("Coordinates being saved:", newDonation.coordinates);
       if (editingId !== null) {
         dispatch(updateDonation(newDonation));
         setMessage("Donation updated successfully!");
@@ -336,6 +334,8 @@ console.log("Coordinates being saved:", newDonation.coordinates);
       }
 
       setForm(emptyForm);
+      setProviderLocation(null);
+      setLocationMessage("");
       setImageFile(null);
       setImagePreview("");
       setExistingImageUrl("");
@@ -678,6 +678,8 @@ console.log("Coordinates being saved:", newDonation.coordinates);
                   setExistingImageUrl("");
                   setFormError("");
                   setMessage("");
+                  setProviderLocation(null);
+                  setLocationMessage("");
 
                   if (imageInputRef.current) {
                     imageInputRef.current.value = "";
@@ -764,6 +766,8 @@ console.log("Coordinates being saved:", newDonation.coordinates);
                               description: donation.description || "",
                             });
                             setExistingImageUrl(donation.imageUrl || "");
+                            setProviderLocation(donation.coordinates || null);
+                            setLocationMessage("");
                             setImageFile(null);
                             setImagePreview("");
                             setEditingId(donation.id);

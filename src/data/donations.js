@@ -12,6 +12,10 @@ export const initialDonations = [
     provider: "Green Leaf Bakery",
     providerId: "green-leaf-bakery",
     location: "Sector 18",
+    coordinates: {
+      latitude: 30.7415,
+      longitude: 76.7885,
+    },
     pickupDeadline: deadlineInHours(2.5),
     description:
       "Fresh vegetable sandwiches prepared for an event. Best collected soon.",
@@ -29,6 +33,10 @@ export const initialDonations = [
     provider: "Saffron Table",
     providerId: "saffron-table",
     location: "Sector 15",
+    coordinates: {
+      latitude: 30.7519,
+      longitude: 76.7725,
+    },
     pickupDeadline: deadlineInHours(5),
     description:
       "Packed dal, rice and seasonal vegetables remaining after dinner service.",
@@ -46,6 +54,10 @@ export const initialDonations = [
     provider: "Green Leaf Bakery",
     providerId: "green-leaf-bakery",
     location: "Sector 22",
+    coordinates: {
+      latitude: 30.7352,
+      longitude: 76.7722,
+    },
     pickupDeadline: deadlineInHours(12),
     description:
       "Unsold bread loaves and buns from the latest production batch.",
@@ -63,6 +75,10 @@ export const initialDonations = [
     provider: "Urban Bites Catering",
     providerId: "urban-bites-catering",
     location: "Sector 21",
+    coordinates: {
+      latitude: 30.7297,
+      longitude: 76.7808,
+    },
     pickupDeadline: deadlineInHours(1.5),
     description: "Sealed paneer wraps left over from a corporate event.",
     status: "Available",
@@ -79,6 +95,10 @@ export const initialDonations = [
     provider: "Harvest Cafe",
     providerId: "harvest-cafe",
     location: "Sector 17",
+    coordinates: {
+      latitude: 30.7398,
+      longitude: 76.7827,
+    },
     pickupDeadline: deadlineInHours(3.5),
     description: "Fresh mixed fruit cups from a cancelled meeting order.",
     status: "Available",
@@ -95,6 +115,10 @@ export const initialDonations = [
     provider: "Celebration Caterers",
     providerId: "celebration-caterers",
     location: "Sector 12",
+    coordinates: {
+      latitude: 30.7621,
+      longitude: 76.782,
+    },
     pickupDeadline: deadlineInHours(20),
     description:
       "Vegetarian snacks and mains remaining after a community celebration.",
@@ -112,6 +136,10 @@ export const initialDonations = [
     provider: "Spice Junction",
     providerId: "spice-junction",
     location: "Sector 29",
+    coordinates: {
+      latitude: 30.7104,
+      longitude: 76.7972,
+    },
     pickupDeadline: deadlineInHours(1),
     description:
       "A large batch of vegetable biryani left over from a catering order.",
@@ -129,6 +157,10 @@ export const initialDonations = [
     provider: "Sweet Crumbs Bakery",
     providerId: "sweet-crumbs-bakery",
     location: "Sector 10",
+    coordinates: {
+      latitude: 30.7547,
+      longitude: 76.7915,
+    },
     pickupDeadline: deadlineInHours(0.75),
     description: "A mixed box of cupcakes ready for collection.",
     status: "Available",

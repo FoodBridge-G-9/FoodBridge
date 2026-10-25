@@ -9,18 +9,19 @@ import {
 import DeadlineBadge from "./DeadlineBadge";
 
 function getStatusLabel(donation) {
-  if (donation.status === "Picked Up") return "Picked up";
-  if (donation.status === "Claimed") return "Claimed";
-
   if (
-    donation.status === "Available" &&
+    donation.status === "Expired" ||
     isDeadlinePassed(donation.pickupDeadline)
   ) {
     return "Expired";
   }
 
+  if (donation.status === "Picked Up") return "Picked up";
+  if (donation.status === "Claimed") return "Claimed";
+
   return donation.status || "Available";
 }
+
 
 export default function FoodCard({
   donation,
@@ -83,11 +84,25 @@ export default function FoodCard({
           )}
         </div>
 
-        <div className="food-card-footer">
-        <Link className="text-link" to={`/food/${donation.id}`}>
-          View details →
-        </Link>
-      </div>
+        
+<div className="food-card-footer">
+  {available ? (
+    <Link className="text-link" to={`/food/${donation.id}`}>
+      View details →
+    </Link>
+  ) : (
+    <span className="text-link" aria-disabled="true">
+      {statusLabel === "Expired"
+        ? "Expired"
+        : statusLabel === "Claimed"
+          ? "Already claimed"
+          : statusLabel === "Picked up"
+            ? "Already picked up"
+            : "Unavailable"}
+    </span>
+  )}
+</div>
+
       </div>
     </article>
   );

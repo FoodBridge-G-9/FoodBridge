@@ -75,21 +75,45 @@ export default function Navbar() {
   );
 
   // Accepted/declined requests belonging to this NGO
-  const ngoNotifications = useMemo(
-    () =>
-      requests
-        .filter(
-          (request) =>
-            String(request.ngoId) === String(session?.id) &&
-            ["Accepted", "Declined"].includes(request.status)
+  
+
+const ngoNotifications = useMemo(
+  () =>
+    requests
+      .filter(
+        (request) =>
+          String(request.ngoId) === String(session?.id)
+      )
+      .map((request) => {
+        const donation = donations.find(
+          (item) =>
+            String(item.id) === String(request.donationId)
+        );
+
+        const expired =
+          donation?.status === "Expired" ||
+          (donation?.pickupDeadline &&
+            new Date(donation.pickupDeadline).getTime() <= Date.now());
+
+        return {
+          ...request,
+          notificationType: expired ? "Expired" : request.status,
+        };
+      })
+      .filter((request) =>
+        ["Accepted", "Declined", "Expired"].includes(
+          request.notificationType
         )
-        .sort(
-          (a, b) =>
-            new Date(b.updatedAt || b.createdAt || 0).getTime() -
-            new Date(a.updatedAt || a.createdAt || 0).getTime()
-        ),
-    [requests, session?.id]
-  );
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt || b.createdAt || 0).getTime() -
+          new Date(a.updatedAt || a.createdAt || 0).getTime()
+      ),
+  [requests, session?.id, donations]
+);
+
+
 
   const isProvider = session?.role === "provider";
   const isNgo = session?.role === "ngo";
@@ -221,28 +245,41 @@ export default function Navbar() {
                   ) : ngoNotifications.length === 0 ? (
                     <p>No request updates yet.</p>
                   ) : (
-                    ngoNotifications.map((request) => {
-                      const accepted = request.status === "Accepted";
+                    
+ngoNotifications.map((request) => {
+  const expired = request.notificationType === "Expired";
+  const accepted = request.status === "Accepted" && !expired;
 
-                      return (
-                        <div
-                          className="notification-item"
-                          key={request.id}
-                        >
-                          <strong>
-                            {accepted
-                              ? "Request accepted ✓"
-                              : "Request declined"}
-                          </strong>
-                          <p>
-                            Your request for{" "}
-                            {request.donationName || "food donation"}{" "}
-                            {accepted ? "has been accepted." : "has been declined."}
-                          </p>
-                        </div>
-                      );
-                    })
-                  )}
+  return (
+    <div className="notification-item" key={request.id}>
+      <strong>
+        {expired
+          ? "Food item expired ⏰"
+          : accepted
+            ? "Request accepted ✓"
+            : "Request declined"}
+      </strong>
+
+      <p>
+        {expired
+          ? `We regret to inform you that the food item "${
+              request.donationName || "you requested"
+            }" has expired and is no longer available for collection. We apologize for the inconvenience. Please explore other available donations.`
+          : `Your request for ${
+              request.donationName || "food donation"
+            } ${
+              accepted
+                ? "has been accepted by the provider."
+                : "has been declined by the provider."
+            }`}
+      </p>
+    </div>
+  );
+}
+)
+
+                  )
+                  }
                 </div>
               )}
             </div>
