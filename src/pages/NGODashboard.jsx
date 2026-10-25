@@ -541,11 +541,6 @@ export default function NGODashboard() {
                         )}
 
                         <div className="ngo-safety-report">
-                          <strong>Food safety concern?</strong>
-                          <p className="muted-text">
-                            Report freshness or hygiene issues separately. A
-                            star rating is not a safety report.
-                          </p>
                           {hasReportedDonation(request.donation.id) ? (
                             <p className="muted-text">
                               ✓ Your organization has submitted a safety report
@@ -558,6 +553,12 @@ export default function NGODashboard() {
                                 submitSafetyReport(request);
                               }}
                             >
+                              <br></br>
+                              <strong>Food safety concern?</strong>
+                              <p className="muted-text">
+                                Report freshness or hygiene issues separately. A
+                                star rating is not a safety report.
+                              </p>
                               <label className="form-field">
                                 <span>Concern type *</span>
                                 <select
