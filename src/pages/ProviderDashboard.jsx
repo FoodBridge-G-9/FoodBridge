@@ -1,7 +1,6 @@
-
-import React from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+// import PickupLocationPicker from "../components/PickupLocationPicker";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { STORAGE_KEYS } from "../utils/storage";
 import {
@@ -10,12 +9,14 @@ import {
   toLocalDateTimeInput,
 } from "../utils/donationUtils";
 import { useSessionContext } from "../context/SessionContext";
+import { getProviderRatingSummary } from "../utils/providerRatings";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addDonation,
   updateDonation,
   removeDonation,
 } from "../features/donations/donationsSlice";
+
 const emptyForm = {
   foodName: "",
   category: "Cooked Meals",
@@ -30,7 +31,16 @@ const emptyForm = {
 export default function ProviderDashboard() {
   const { session } = useSessionContext();
   const dispatch = useDispatch();
+
   const donations = useSelector((state) => state.donations.items);
+
+  // Provider ratings and safety reports
+  const [reviews] = useLocalStorage(STORAGE_KEYS.reviews, []);
+  const [safetyReports] = useLocalStorage(STORAGE_KEYS.safetyReports, []);
+
+  const providerRating = getProviderRatingSummary(reviews, session?.id);
+
+  // Automatically mark available donations as expired after their deadline.
   useEffect(() => {
     const checkExpiredDonations = () => {
       const now = Date.now();
@@ -59,8 +69,13 @@ export default function ProviderDashboard() {
 
     return () => clearInterval(intervalId);
   }, [donations, dispatch]);
+
   const [requests, setRequests] = useLocalStorage(STORAGE_KEYS.requests, []);
+
   const [form, setForm] = useState(emptyForm);
+  const [providerLocation, setProviderLocation] = useState(null);
+  const [locationMessage, setLocationMessage] = useState("");
+  const [locationLoading, setLocationLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState("");
   const [formError, setFormError] = useState("");
@@ -68,23 +83,39 @@ export default function ProviderDashboard() {
   const [imagePreview, setImagePreview] = useState("");
   const [existingImageUrl, setExistingImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [requestFilter, setRequestFilter] = useState("All");
+
   const imageInputRef = useRef(null);
   const formRef = useRef(null);
 
+  // Only show donations belonging to the signed-in provider.
   const myDonations = useMemo(
-    () => donations.filter((donation) => donation.providerId === session?.id),
+    () =>
+      donations.filter(
+        (donation) => String(donation.providerId) === String(session?.id),
+      ),
     [donations, session?.id],
   );
+
   const myDonationIds = useMemo(
-    () => new Set(myDonations.map((donation) => donation.id)),
+    () => new Set(myDonations.map((donation) => String(donation.id))),
     [myDonations],
   );
+
+  // Only show safety reports associated with this provider's donations.
+  const mySafetyReports = useMemo(
+    () =>
+      safetyReports.filter((report) =>
+        myDonationIds.has(String(report.donationId)),
+      ),
+    [safetyReports, myDonationIds],
+  );
+
+  // Get all requests received for this provider's donations.
   const incomingRequests = useMemo(
     () =>
       requests
-        .filter((request) => myDonationIds.has(request.donationId))
+        .filter((request) => myDonationIds.has(String(request.donationId)))
         .sort(
           (a, b) =>
             new Date(b.createdAt || 0).getTime() -
@@ -92,22 +123,26 @@ export default function ProviderDashboard() {
         ),
     [requests, myDonationIds],
   );
+
   const donationById = useMemo(
     () =>
       new Map(myDonations.map((donation) => [String(donation.id), donation])),
     [myDonations],
   );
+
+  // Add the donation and display status to each request.
   const visibleIncomingRequests = useMemo(
     () =>
       incomingRequests
-        .map((request) => ({
-          ...request,
-          donation: donationById.get(String(request.donationId)),
-          displayStatus: getRequestDisplayStatus(
-            request,
-            donationById.get(String(request.donationId)),
-          ),
-        }))
+        .map((request) => {
+          const donation = donationById.get(String(request.donationId));
+
+          return {
+            ...request,
+            donation,
+            displayStatus: getRequestDisplayStatus(request, donation),
+          };
+        })
         .filter(
           (request) =>
             requestFilter === "All" || request.displayStatus === requestFilter,
@@ -118,7 +153,7 @@ export default function ProviderDashboard() {
   const newRequestCount = incomingRequests.filter((request) => {
     if (request.status !== "Requested") return false;
 
-    const donation = myDonations.find((item) => item.id === request.donationId);
+    const donation = donationById.get(String(request.donationId));
 
     return donation && donation.status === "Available";
   }).length;
@@ -128,6 +163,7 @@ export default function ProviderDashboard() {
       myDonations.filter((donation) => donation.status === "Available").length,
     [myDonations],
   );
+
   const claimedCount = useMemo(
     () =>
       myDonations.filter((donation) => donation.status === "Claimed").length,
@@ -145,11 +181,94 @@ export default function ProviderDashboard() {
       myDonations.filter((donation) => donation.status === "Expired").length,
     [myDonations],
   );
-  const handleChange = (event) =>
+
+  // Update form fields.
+
+  // Update form fields.
+  const handleChange = (event) => {
     setForm((current) => ({
       ...current,
       [event.target.name]: event.target.value,
     }));
+  };
+
+  // Share the provider's current location.
+  const handleShareLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationMessage(
+        "Location is not supported by this browser. Please enter your pickup location manually.",
+      );
+      return;
+    }
+
+    setLocationLoading(true);
+    setLocationMessage("");
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const coordinates = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          capturedAt: new Date().toISOString(),
+        };
+
+        setProviderLocation(coordinates);
+
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${coordinates.latitude}&lon=${coordinates.longitude}`,
+          );
+
+          if (!response.ok) {
+            throw new Error("Could not find the address.");
+          }
+
+          const data = await response.json();
+
+          const address =
+            data.display_name ||
+            `${coordinates.latitude}, ${coordinates.longitude}`;
+
+          setForm((current) => ({
+            ...current,
+            location: address,
+          }));
+
+          setLocationMessage(
+            "Location detected. You can edit the pickup address below.",
+          );
+        } catch {
+          setLocationMessage(
+            "Coordinates captured, but the address could not be found. Please enter the pickup address manually.",
+          );
+        } finally {
+          setLocationLoading(false);
+        }
+      },
+      (error) => {
+        let errorMessage =
+          "Could not get your location. Please enter the pickup location manually.";
+
+        if (error.code === error.PERMISSION_DENIED) {
+          errorMessage =
+            "Location permission denied. Allow location access in browser settings or enter the address manually.";
+        } else if (error.code === error.TIMEOUT) {
+          errorMessage = "Location request timed out. Please try again.";
+        }
+
+        setLocationMessage(errorMessage);
+        setLocationLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 60000,
+      },
+    );
+  };
+
+  // Validate and preview the selected food image.
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
 
@@ -171,6 +290,8 @@ export default function ProviderDashboard() {
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
   };
+
+  // Upload the selected image to Cloudinary.
   const uploadImage = async (file) => {
     const data = new FormData();
 
@@ -194,6 +315,7 @@ export default function ProviderDashboard() {
     return result.secure_url;
   };
 
+  // Validate and publish a new donation or update an existing one.
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -219,7 +341,9 @@ export default function ProviderDashboard() {
     setUploading(true);
 
     try {
-      const existingDonation = donations.find((d) => d.id === editingId);
+      const existingDonation = donations.find(
+        (donation) => String(donation.id) === String(editingId),
+      );
 
       const imageUrl = imageFile
         ? await uploadImage(imageFile)
@@ -228,8 +352,9 @@ export default function ProviderDashboard() {
       const newDonation = {
         ...form,
         id: editingId ?? Date.now(),
-        provider: session.name,
-        providerId: session.id,
+        provider: session?.name || "Food Provider",
+        providerId: session?.id,
+        coordinates: providerLocation ?? existingDonation?.coordinates ?? null,
         quantity,
         status: editingId
           ? existingDonation?.status || "Available"
@@ -237,6 +362,7 @@ export default function ProviderDashboard() {
         imageUrl,
         accent: "🍲",
       };
+
       if (editingId !== null) {
         dispatch(updateDonation(newDonation));
         setMessage("Donation updated successfully!");
@@ -249,6 +375,8 @@ export default function ProviderDashboard() {
       }
 
       setForm(emptyForm);
+      setProviderLocation(null);
+      setLocationMessage("");
       setImageFile(null);
       setImagePreview("");
       setExistingImageUrl("");
@@ -270,13 +398,16 @@ export default function ProviderDashboard() {
     }
   };
 
+  // Accept or decline an NGO's request.
   const updateRequest = (requestId, status) => {
-    const target = requests.find((request) => request.id === requestId);
+    const target = requests.find(
+      (request) => String(request.id) === String(requestId),
+    );
+
     if (!target) return;
 
-    const targetDonation = myDonations.find(
-      (donation) => String(donation.id) === String(target.donationId),
-    );
+    const targetDonation = donationById.get(String(target.donationId));
+
     if (
       status === "Accepted" &&
       (!targetDonation ||
@@ -286,22 +417,38 @@ export default function ProviderDashboard() {
       setMessage(
         "This donation is no longer available. The request cannot be accepted.",
       );
+
       if (targetDonation?.status === "Available") {
-        dispatch(updateDonation({ id: targetDonation.id, status: "Expired" }));
+        dispatch(
+          updateDonation({
+            id: targetDonation.id,
+            status: "Expired",
+          }),
+        );
       }
+
       return;
     }
 
     setRequests((current) =>
       current.map((request) => {
-        if (request.id === requestId) return { ...request, status };
+        if (String(request.id) === String(requestId)) {
+          return { ...request, status };
+        }
+
+        // When one request is accepted, decline other pending
+        // requests for the same donation.
         if (
           status === "Accepted" &&
           String(request.donationId) === String(target.donationId) &&
           request.status === "Requested"
         ) {
-          return { ...request, status: "Not selected" };
+          return {
+            ...request,
+            status: "Declined",
+          };
         }
+
         return request;
       }),
     );
@@ -309,13 +456,51 @@ export default function ProviderDashboard() {
     if (status === "Accepted") {
       dispatch(
         updateDonation({
-          id: target.donationId,
+          id: targetDonation.id,
           status: "Claimed",
         }),
       );
     }
+
+    setMessage(
+      status === "Accepted"
+        ? "Request accepted successfully."
+        : "Request declined successfully.",
+    );
   };
+
+  // Mark a claimed donation as picked up.
+
   const markAsPickedUp = (donationId) => {
+    const donation = donationById.get(String(donationId));
+
+    // Confirm that this donation belongs to the signed-in provider.
+    if (!donation || String(donation.providerId) !== String(session?.id)) {
+      setMessage("You cannot update this donation.");
+      return;
+    }
+
+    // Only claimed donations can be marked as picked up.
+    if (donation.status !== "Claimed") {
+      setMessage("Only claimed donations can be marked as picked up.");
+      return;
+    }
+
+    // Make sure an NGO request was accepted for this donation.
+    const hasAcceptedRequest = requests.some(
+      (request) =>
+        String(request.donationId) === String(donationId) &&
+        request.status === "Accepted",
+    );
+
+    if (!hasAcceptedRequest) {
+      setMessage("No accepted NGO request was found for this donation.");
+      return;
+    }
+
+    // Update only the donation status.
+    // The accepted request remains "Accepted", allowing
+    // getRequestDisplayStatus() to display it as "Completed".
     dispatch(
       updateDonation({
         id: donationId,
@@ -338,8 +523,10 @@ export default function ProviderDashboard() {
               received for them.
             </p>
           </div>
+        </div>
 
-      
+        {/* Donation statistics */}
+        <div className="dashboard-stats">
           <div className="dashboard-stat">
             <span>Active listings</span>
             <strong>{activeCount}</strong>
@@ -359,8 +546,23 @@ export default function ProviderDashboard() {
             <span>Expired listings</span>
             <strong>{expiredCount}</strong>
           </div>
+
+          <div className="dashboard-stat provider-rating-stat">
+            <span>Provider rating</span>
+            <strong>
+              {providerRating.count
+                ? `${providerRating.average.toFixed(1)} ★`
+                : "—"}
+            </strong>
+            <small>
+              {providerRating.count}{" "}
+              {providerRating.count === 1 ? "review" : "reviews"}
+            </small>
+          </div>
         </div>
+
         <div className="dashboard-grid">
+          {/* Donation form */}
           <form
             className="dashboard-panel"
             onSubmit={handleSubmit}
@@ -372,8 +574,11 @@ export default function ProviderDashboard() {
                 <h2>Post surplus food</h2>
               </div>
             </div>
+
             {message && <div className="success-box">✓ {message}</div>}
+
             {formError && <div className="error-box">⚠ {formError}</div>}
+
             <div className="form-grid">
               <label className="form-field full">
                 <span>Food name *</span>
@@ -385,9 +590,9 @@ export default function ProviderDashboard() {
                   placeholder="e.g. Veg sandwiches"
                 />
               </label>
+
               <label className="form-field full">
                 <span>Food photo *</span>
-
                 <input
                   ref={imageInputRef}
                   type="file"
@@ -400,6 +605,7 @@ export default function ProviderDashboard() {
                     ? "Your current photo is shown below. Choose a new file only if you want to replace it."
                     : "Upload a clear photo of the food being donated. Maximum 5 MB."}
                 </small>
+
                 {(imagePreview || existingImageUrl) && (
                   <img
                     src={imagePreview || existingImageUrl}
@@ -416,6 +622,7 @@ export default function ProviderDashboard() {
                   />
                 )}
               </label>
+
               <label className="form-field">
                 <span>Category *</span>
                 <select
@@ -431,6 +638,7 @@ export default function ProviderDashboard() {
                   <option>Event Food</option>
                 </select>
               </label>
+
               <label className="form-field">
                 <span>Food type *</span>
                 <select
@@ -443,9 +651,9 @@ export default function ProviderDashboard() {
                   <option>Non-Vegetarian</option>
                 </select>
               </label>
+
               <label className="form-field">
                 <span>Quantity *</span>
-
                 <input
                   required
                   min="1"
@@ -454,10 +662,11 @@ export default function ProviderDashboard() {
                   name="quantity"
                   value={form.quantity}
                   onChange={handleChange}
-                  onWheel={(e) => e.currentTarget.blur()}
+                  onWheel={(event) => event.currentTarget.blur()}
                   placeholder="40"
                 />
               </label>
+
               <label className="form-field">
                 <span>Unit *</span>
                 <select
@@ -473,16 +682,78 @@ export default function ProviderDashboard() {
                   <option>cups</option>
                 </select>
               </label>
-              <label className="form-field">
+              <div className="form-field full pickup-location-field">
                 <span>Pickup location *</span>
+
                 <input
                   required
                   name="location"
                   value={form.location}
                   onChange={handleChange}
-                  placeholder="e.g. Sector 18"
+                  placeholder="e.g. Sector 18, Rajpura"
                 />
-              </label>
+
+                <small className="field-hint">
+                  Enter the restaurant address or area where food can be
+                  collected.
+                </small>
+
+                <div className="location-action-row">
+                  <button
+                    type="button"
+                    className="button button-secondary location-share-button"
+                    onClick={handleShareLocation}
+                    disabled={locationLoading}
+                  >
+                    {locationLoading
+                      ? "Getting location..."
+                      : providerLocation
+                        ? "Refresh My Location"
+                        : "Share My Location"}
+                  </button>
+                </div>
+
+                {providerLocation && (
+                  <div className="location-confirmation">
+                    <div className="location-confirmation-icon">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="25"
+                        height="25"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" />
+                        <circle cx="12" cy="10" r="2.5" />
+                      </svg>
+                    </div>
+
+                    <div className="location-confirmation-copy">
+                      <strong>Location shared</strong>
+                      <span>
+                        Your pickup coordinates are ready to be attached to your
+                        donation.
+                      </span>
+                    </div>
+
+                    <span className="location-confirmation-check">✓</span>
+                  </div>
+                )}
+
+                {locationMessage && !providerLocation && (
+                  <div
+                    className="location-error-message"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    {locationMessage}
+                  </div>
+                )}
+              </div>
               <label className="form-field">
                 <span>Pickup deadline *</span>
                 <input
@@ -496,6 +767,7 @@ export default function ProviderDashboard() {
                   Select the pickup date and time.
                 </small>
               </label>
+
               <label className="form-field full">
                 <span>Description</span>
                 <textarea
@@ -504,9 +776,10 @@ export default function ProviderDashboard() {
                   onChange={handleChange}
                   rows="4"
                   placeholder="Add any useful details about the food..."
-                ></textarea>
+                />
               </label>
             </div>
+
             <button
               className="button button-primary"
               type="submit"
@@ -531,6 +804,8 @@ export default function ProviderDashboard() {
                   setExistingImageUrl("");
                   setFormError("");
                   setMessage("");
+                  setProviderLocation(null);
+                  setLocationMessage("");
 
                   if (imageInputRef.current) {
                     imageInputRef.current.value = "";
@@ -542,6 +817,7 @@ export default function ProviderDashboard() {
             )}
           </form>
 
+          {/* Provider's donations */}
           <aside className="dashboard-panel dashboard-side">
             <div className="panel-heading">
               <div>
@@ -549,6 +825,7 @@ export default function ProviderDashboard() {
                 <h2>Recent listings</h2>
               </div>
             </div>
+
             {myDonations.length === 0 ? (
               <div className="empty-inline">
                 <span>🆕</span>
@@ -558,7 +835,7 @@ export default function ProviderDashboard() {
                     You're signed in as <strong>{session?.name}</strong>. Post
                     your first donation on the left — or if you expected to see
                     existing listings, log out and sign back in using the exact
-                    name you used before.
+                    account you used before.
                   </p>
                 </div>
               </div>
@@ -570,7 +847,9 @@ export default function ProviderDashboard() {
                       to={`/food/${donation.id}`}
                       className="mini-list-link"
                     >
-                      <span className="mini-list-icon">{donation.accent}</span>
+                      <span className="mini-list-icon">
+                        {donation.accent || "🍲"}
+                      </span>
 
                       <span>
                         <strong>{donation.foodName}</strong>
@@ -582,11 +861,13 @@ export default function ProviderDashboard() {
                     </Link>
 
                     <span
-                      className={`status-pill status-${donation.status
+                      className={`status-pill status-${(
+                        donation.status || "available"
+                      )
                         .toLowerCase()
                         .replace(/\s+/g, "-")}`}
                     >
-                      {donation.status}
+                      {donation.status || "Available"}
                     </span>
 
                     {donation.status === "Claimed" && (
@@ -598,6 +879,7 @@ export default function ProviderDashboard() {
                         Mark as Picked Up
                       </button>
                     )}
+
                     {donation.status === "Available" && (
                       <div className="donation-actions">
                         <button
@@ -616,7 +898,10 @@ export default function ProviderDashboard() {
                               ),
                               description: donation.description || "",
                             });
+
                             setExistingImageUrl(donation.imageUrl || "");
+                            setProviderLocation(donation.coordinates || null);
+                            setLocationMessage("");
                             setImageFile(null);
                             setImagePreview("");
                             setEditingId(donation.id);
@@ -624,6 +909,7 @@ export default function ProviderDashboard() {
                               "Editing your donation. Update the details on the left.",
                             );
                             setFormError("");
+
                             formRef.current?.scrollIntoView({
                               behavior: "smooth",
                               block: "start",
@@ -640,6 +926,7 @@ export default function ProviderDashboard() {
                             const confirmed = window.confirm(
                               `Delete "${donation.foodName}"? This cannot be undone.`,
                             );
+
                             if (confirmed) {
                               dispatch(removeDonation(donation.id));
                             }
@@ -656,6 +943,7 @@ export default function ProviderDashboard() {
           </aside>
         </div>
 
+        {/* NGO requests */}
         <div className="dashboard-panel request-panel provider-requests-panel">
           <div className="panel-heading">
             <div>
@@ -666,6 +954,7 @@ export default function ProviderDashboard() {
                 and completed pickups.
               </p>
             </div>
+
             <span className="request-count">{newRequestCount} pending</span>
           </div>
 
@@ -680,14 +969,15 @@ export default function ProviderDashboard() {
                 "Accepted",
                 "Completed",
                 "Declined",
-                "Not selected",
                 "Cancelled",
                 "Expired",
               ].map((option) => (
                 <button
                   key={option}
                   type="button"
-                  className={`status-filter-btn ${requestFilter === option ? "active" : ""}`}
+                  className={`status-filter-btn ${
+                    requestFilter === option ? "active" : ""
+                  }`}
                   onClick={() => setRequestFilter(option)}
                 >
                   {option}
@@ -716,6 +1006,7 @@ export default function ProviderDashboard() {
                   request.status === "Requested" &&
                   request.donation?.status === "Available" &&
                   !isDeadlinePassed(request.donation?.pickupDeadline);
+
                 return (
                   <article
                     className="request-item request-item-detailed"
@@ -723,27 +1014,38 @@ export default function ProviderDashboard() {
                   >
                     <div className="request-item-copy">
                       <strong>{request.ngoName || "Community NGO"}</strong>
+
                       <small>
                         Requested:{" "}
                         {request.donationName ||
                           request.donation?.foodName ||
                           "Food donation"}
                       </small>
+
                       <small>
                         {request.createdAt
                           ? new Date(request.createdAt).toLocaleString(
                               "en-IN",
-                              { dateStyle: "medium", timeStyle: "short" },
+                              {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              },
                             )
                           : "Request date unavailable"}
                       </small>
                     </div>
+
                     <div className="request-item-status-actions">
                       <span
-                        className={`status-pill status-${request.displayStatus.toLowerCase().replace(/\s+/g, "-")}`}
+                        className={`status-pill status-${(
+                          request.displayStatus || "requested"
+                        )
+                          .toLowerCase()
+                          .replace(/\s+/g, "-")}`}
                       >
                         {request.displayStatus}
                       </span>
+
                       {canReview && (
                         <>
                           <button
@@ -755,6 +1057,7 @@ export default function ProviderDashboard() {
                           >
                             Accept
                           </button>
+
                           <button
                             type="button"
                             className="small-action decline"
@@ -766,6 +1069,7 @@ export default function ProviderDashboard() {
                           </button>
                         </>
                       )}
+
                       {request.donation && (
                         <Link
                           className="text-link"
@@ -778,6 +1082,71 @@ export default function ProviderDashboard() {
                   </article>
                 );
               })}
+            </div>
+          )}
+        </div>
+
+        {/* Food safety reports */}
+        <div className="dashboard-panel request-panel provider-safety-panel">
+          <div className="panel-heading">
+            <div>
+              <p className="eyebrow">FOOD SAFETY</p>
+              <h2>Safety reports</h2>
+              <p className="muted-text">
+                Safety concerns are kept separate from star ratings.
+              </p>
+            </div>
+
+            <span className="request-count">
+              {mySafetyReports.length}{" "}
+              {mySafetyReports.length === 1 ? "report" : "reports"}
+            </span>
+          </div>
+
+          {mySafetyReports.length === 0 ? (
+            <p className="muted-text">
+              No safety reports have been submitted for your donations.
+            </p>
+          ) : (
+            <div className="request-list">
+              {[...mySafetyReports]
+                .sort(
+                  (a, b) =>
+                    new Date(b.createdAt || 0).getTime() -
+                    new Date(a.createdAt || 0).getTime(),
+                )
+                .map((report) => (
+                  <article
+                    className="request-item request-item-detailed"
+                    key={report.id}
+                  >
+                    <div className="request-item-copy">
+                      <strong>{report.concern || "Food safety concern"}</strong>
+
+                      <small>
+                        {report.donationName || "Food donation"} · Reported by{" "}
+                        {report.ngoName || "Community NGO"}
+                      </small>
+
+                      <p>
+                        {report.details || "No additional details provided."}
+                      </p>
+
+                      <small>
+                        {report.createdAt
+                          ? new Date(report.createdAt).toLocaleString("en-IN", {
+                              dateStyle: "medium",
+                              timeStyle: "short",
+                            })
+                          : "Report date unavailable"}
+                      </small>
+                    </div>
+
+                    <span className="status-pill status-expired">
+                      Review required
+                    </span>
+                  </article>
+                ))}
             </div>
           )}
         </div>

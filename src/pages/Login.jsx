@@ -31,6 +31,10 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState("");
   const [uploadError, setUploadError] = useState("");
   const [message, setMessage] = useState("");
+  const [forgotMode, setForgotMode] = useState(false);
+const [resetEmail, setResetEmail] = useState("");
+const [resetPassword, setResetPassword] = useState("");
+const [resetConfirmPassword, setResetConfirmPassword] = useState("");
 
   const destination = location.state?.from;
 
@@ -137,6 +141,68 @@ export default function Login({ onLogin }) {
 
     goToDashboard(user);
   };
+
+  
+const handlePasswordReset = (event) => {
+  event.preventDefault();
+  clearMessages();
+
+  if (
+    !resetEmail.trim() ||
+    !resetPassword ||
+    !resetConfirmPassword
+  ) {
+    setError("Please fill in all fields.");
+    return;
+  }
+
+  const passwordPattern =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s])\S{8,}$/;
+
+  if (!passwordPattern.test(resetPassword)) {
+    setError(
+      "Password must be at least 8 characters and include uppercase, lowercase, a number and a special character. Spaces are not allowed."
+    );
+    return;
+  }
+
+  if (resetPassword !== resetConfirmPassword) {
+    setError("Passwords do not match.");
+    return;
+  }
+
+  const users = getUsers();
+  const normalizedEmail = resetEmail.trim().toLowerCase();
+
+  const userIndex = users.findIndex(
+    (item) =>
+      (item.email || "").trim().toLowerCase() === normalizedEmail &&
+      item.role === role
+  );
+
+  if (userIndex === -1) {
+    setError(
+      `${role === "provider" ? "Provider" : "NGO"} account not found with this email.`
+    );
+    return;
+  }
+
+  const updatedUsers = [...users];
+  updatedUsers[userIndex] = {
+    ...updatedUsers[userIndex],
+    password: resetPassword,
+  };
+
+  saveUsers(updatedUsers);
+
+  setForgotMode(false);
+  setEmail(resetEmail.trim());
+  setPassword("");
+  setResetEmail("");
+  setResetPassword("");
+  setResetConfirmPassword("");
+  setMessage("Password reset successfully! You can now log in.");
+};
 
   const handleSignup = (event) => {
     event.preventDefault();
@@ -249,10 +315,15 @@ if (!passwordPattern.test(password)) {
   };
 
   const startLogin = () => {
-    setMode("login");
-    setSignupStep(1);
-    clearMessages();
-  };
+  setMode("login");
+  setSignupStep(1);
+  setForgotMode(false);
+  setResetEmail("");
+  setResetPassword("");
+  setResetConfirmPassword("");
+  setPassword("");
+  clearMessages();
+};
 
   const startSignup = () => {
     setMode("signup");
@@ -333,8 +404,12 @@ if (!passwordPattern.test(password)) {
         <form
           className="auth-card"
           onSubmit={
-            mode === "login" ? handleLogin : handleSignup
-          }
+          mode === "signup"
+            ? handleSignup
+            : forgotMode
+              ? handlePasswordReset
+              : handleLogin
+        }
         >
           <div className="auth-toggle">
             <button
@@ -359,16 +434,18 @@ if (!passwordPattern.test(password)) {
               {mode === "login" ? "WELCOME BACK" : "JOIN FOODBRIDGE"}
             </p>
 
-            <h2>
-              {mode === "login"
-                ? "Login to FoodBridge"
-                : signupStep === 1
-                  ? "Create your account"
-                  : signupStep === 2
-                    ? "Verify your account"
-                    : "Set up your account"}
-            </h2>
-
+            
+          <h2>
+          {mode === "login"
+            ? forgotMode
+              ? "Reset Your Password"
+              : "Login to FoodBridge"
+            : signupStep === 1
+              ? "Create your account"
+              : signupStep === 2
+                ? "Verify your account"
+                : "Set up your account"}
+        </h2>
             {mode === "signup" && (
               <p className="signup-welcome-text">
                 {role === "provider"
@@ -694,7 +771,7 @@ if (!passwordPattern.test(password)) {
 
                       <button
                         type="button"
-                        className="button button-primary button-full"
+                        className="button button-primary button-full verification-continue-button"
                         onClick={() => {
                           clearMessages();
                           setSignupStep(3);
@@ -717,7 +794,7 @@ if (!passwordPattern.test(password)) {
 
               <button
                 type="button"
-                className="button button-full"
+                className="button button-full verification-back-button"
                 onClick={() => {
                   clearMessages();
                   setSignupStep(1);
@@ -729,46 +806,147 @@ if (!passwordPattern.test(password)) {
           )}
 
           {/* LOGIN: Email and password */}
-          {mode === "login" && (
-            <>
-              <label className="form-field">
-                <span>Email</span>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="you@example.com"
-                  autoComplete="username"
-                  required
-                />
-              </label>
+          
+{mode === "login" && !forgotMode && (
+  <>
+    <label className="form-field">
+      <span>Email</span>
+      <input
+        type="email"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+        placeholder="you@example.com"
+        autoComplete="username"
+        required
+      />
+    </label>
 
-              <label className="form-field">
-                <span>Password</span>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                  required
-                />
-              </label>
+    <label className="form-field">
+      <span>Password</span>
+      <input
+        type="password"
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+        placeholder="Enter your password"
+        autoComplete="current-password"
+        required
+      />
+    </label>
 
-              {error && (
-                <p className="form-error" role="alert">
-                  {error}
-                </p>
-              )}
+    {error && (
+      <p className="form-error" role="alert">
+        {error}
+      </p>
+    )}
 
-              <button
-                className="button button-primary button-full"
-                type="submit"
-              >
-                Login as {role === "provider" ? "Provider" : "NGO"} →
-              </button>
-            </>
-          )}
+    {message && (
+      <p className="form-success" role="status">
+        {message}
+      </p>
+    )}
+
+    <button
+      className="button button-primary button-full"
+      type="submit"
+    >
+      Login as {role === "provider" ? "Provider" : "NGO"} →
+    </button>
+
+    
+<button
+  type="button"
+  className="forgot-password-link"
+  onClick={() => {
+    clearMessages();
+    setForgotMode(false);
+    setMessage(
+      "Password recovery is not configured yet. Please contact the FoodBridge administrator for assistance."
+    );
+  }}
+>
+  Forgot Password?
+</button>
+
+  </>
+)}
+          
+{mode === "login" && forgotMode && (
+  
+  <div className="forgot-password-form">
+    <p>
+      Reset your password for your{" "}
+      {role === "provider" ? "provider" : "NGO"} account.
+    </p>
+
+    <label className="form-field">
+      <span>Registered Email</span>
+      <input
+        type="email"
+        value={resetEmail}
+        onChange={(event) => setResetEmail(event.target.value)}
+        placeholder="you@example.com"
+        required
+      />
+    </label>
+
+    <label className="form-field">
+      <span>New Password</span>
+      <input
+        type="password"
+        value={resetPassword}
+        onChange={(event) => setResetPassword(event.target.value)}
+        placeholder="Enter new password"
+        autoComplete="new-password"
+        required
+      />
+    </label>
+
+    <label className="form-field">
+      <span>Confirm New Password</span>
+      <input
+        type="password"
+        value={resetConfirmPassword}
+        onChange={(event) =>
+          setResetConfirmPassword(event.target.value)
+        }
+        placeholder="Re-enter new password"
+        autoComplete="new-password"
+        required
+      />
+    </label>
+
+    {error && (
+      <p className="form-error" role="alert">
+        {error}
+      </p>
+    )}
+
+    {message && (
+      <p className="form-success" role="status">
+        {message}
+      </p>
+    )}
+
+    <button
+      className="button button-primary button-full"
+      type="submit"
+    >
+      Reset Password →
+    </button>
+
+    <button
+      type="button"
+      className="button button-full"
+      onClick={() => {
+        setForgotMode(false);
+        clearMessages();
+      }}
+    >
+      ← Back to Login
+    </button>
+  </div>
+)}
+
 
           {/* SIGNUP STEP 3: Create account */}
           {mode === "signup" && signupStep === 3 && (
@@ -841,7 +1019,7 @@ if (!passwordPattern.test(password)) {
 
               <button
                 type="button"
-                className="button button-full"
+               className="button button-full signup-back-button"
                 onClick={() => {
                   clearMessages();
                   setSignupStep(2);

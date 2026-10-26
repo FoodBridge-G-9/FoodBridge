@@ -1,168 +1,4 @@
-// import React from "react";
-// import { Link } from "react-router-dom";
-// import { useMemo, useState } from "react";
-// import FoodCard from "../components/FoodCard";
-// import { useSelector } from "react-redux";
-// import { STORAGE_KEYS } from "../utils/storage";
-// import { useSessionContext } from "../context/SessionContext";
-// import { useLocalStorage } from "../hooks/useLocalStorage";
-// const STATUS_LABELS = {
-//    Requested: "Requested",
-//   Accepted: "Claimed",
-//   Claimed: "Claimed",
-//   Declined: "Declined",
-//   Closed: "Closed",
-// };
-
-// const STATUS_FILTERS = ["All", "Requested", "Accepted", "Declined"];
-
-// export default function NGODashboard() {
-//   const{session}=useSessionContext();
-//   const donations = useSelector(
-//   (state) => state.donations.items
-// );
-//   const [requests] = useLocalStorage(STORAGE_KEYS.requests, []);
-//   const [statusFilter, setStatusFilter] = useState("All");
-
-//   const myRequests = useMemo(
-//     () => requests.filter((request) => request.ngoId === session?.id),
-//     [requests, session?.id],
-//   );
-//   const visibleRequests = useMemo(
-//     () =>
-//       statusFilter === "All"
-//         ? myRequests
-//         : myRequests.filter((request) => request.status === statusFilter),
-//     [myRequests, statusFilter],
-//   );
-//   const requestedIds = useMemo(
-//     () => new Set(myRequests.map((request) => request.donationId)),
-//     [myRequests],
-//   );
-//   const availableDonations = donations.filter(
-//   (donation) => donation.status === "Available"
-// );
-
-//   return (
-//     <section className="dashboard-section">
-//       <div className="container">
-//         <div className="dashboard-header">
-//           <div>
-//             <p className="eyebrow">NGO / SHELTER DASHBOARD</p>
-//             <h1>Welcome, {session?.name || "Community Partner"}.</h1>
-//             <p>
-//               Discover available food and track only the requests made by your
-//               organization.
-//             </p>
-//           </div>
-//           <div className="dashboard-stat">
-//             <span>My requests</span>
-//             <strong>{myRequests.length}</strong>
-//           </div>
-//         </div>
-
-//         <div className="ngo-callout">
-//           <span>💚</span>
-//           <div>
-//             <strong>Tip: act quickly</strong>
-//             <p>
-//               FoodBridge listings may have short pickup windows. Check the
-//               deadline before requesting.
-//             </p>
-//           </div>
-//           <Link className="button button-secondary" to="/food">
-//             Browse food
-//           </Link>
-//         </div>
-
-//         <div className="dashboard-panel request-panel">
-//           <div className="panel-heading">
-//             <div>
-//               <p className="eyebrow">MY ACTIVITY</p>
-//               <h2>My requests</h2>
-//             </div>
-//           </div>
-
-//           {myRequests.length > 0 && (
-//             <div className="status-filter-bar">
-//               {STATUS_FILTERS.map((option) => (
-//                 <button
-//                   key={option}
-//                   type="button"
-//                   className={`status-filter-btn ${statusFilter === option ? "active" : ""}`}
-//                   onClick={() => setStatusFilter(option)}
-//                 >
-//                   {option}
-//                 </button>
-//               ))}
-//             </div>
-//           )}
-
-//           {myRequests.length === 0 ? (
-//             <p className="muted-text">
-//               You haven't requested any donations yet. Browse available food to
-//               get started.
-//             </p>
-//           ) : visibleRequests.length === 0 ? (
-//             <p className="muted-text">No requests match this filter yet.</p>
-//           ) : (
-//             <div className="request-list">
-//               {visibleRequests.map((request) => (
-//                 <div className="request-item" key={request.id}>
-//                   <div>
-//                     <strong>{request.donationName}</strong>
-//                     <small>From {request.providerName}</small>
-//                   </div>
-//                   <span
-//                     className={`status-pill status-${request.status.toLowerCase()}`}
-//                   >
-//                     {request.status === "Accepted" ? "Claimed" : (
-//                        STATUS_LABELS[request.status] || request.status
-//                     )}
-//                   </span>
-//                 </div>
-//               ))}
-//             </div>
-//           )}
-//         </div>
-
-//         <div className="section-heading-row dashboard-list-heading">
-//           <div>
-//             <p className="eyebrow">DISCOVER</p>
-//             <h2>Available donations</h2>
-//           </div>
-//           <Link className="text-link" to="/food">
-//             See all →
-//           </Link>
-//         </div>
-//         {availableDonations.length === 0 ? (
-//   <div className="empty-inline">
-//     <span>🍽️</span>
-//     <div>
-//       <strong>No available donations right now.</strong>
-//       <p>
-//         All current listings may be claimed, picked up, or awaiting
-//         new donations. Check back soon.
-//       </p>
-//     </div>
-//   </div>
-// ) : (
-//   <div className="food-grid">
-//             {availableDonations.slice(0, 3).map((donation) => (
-//               <div className="dashboard-food-wrapper" key={donation.id}>
-//                 <FoodCard donation={donation} />
-//                 {requestedIds.has(donation.id) && (
-//                   <span className="requested-badge">✓ Requested by you</span>
-//                 )}
-//               </div>
-//             ))}
-//           </div>
-//         )}
-//       </div>
-//     </section>
-//   );
-// }
-
+import DonationLocation from "../components/DonationLocation";
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -192,6 +28,14 @@ export default function NGODashboard() {
   const donations = useSelector((state) => state.donations.items);
 
   const [requests, setRequests] = useLocalStorage(STORAGE_KEYS.requests, []);
+  const [reviews, setReviews] = useLocalStorage(STORAGE_KEYS.reviews, []);
+  const [safetyReports, setSafetyReports] = useLocalStorage(
+    STORAGE_KEYS.safetyReports,
+    [],
+  );
+  const [ratingDrafts, setRatingDrafts] = useState({});
+  const [safetyDrafts, setSafetyDrafts] = useState({});
+  const [feedbackMessage, setFeedbackMessage] = useState("");
 
   const [statusFilter, setStatusFilter] = useState("All");
   const [now, setNow] = useState(() => Date.now());
@@ -288,6 +132,106 @@ export default function NGODashboard() {
     (total, donation) => total + Number(donation.quantity || 0),
     0,
   );
+
+  const expiredRequests = myRequests.filter(
+    (request) => request.displayStatus === "Expired",
+  );
+  const hasReviewedDonation = (donationId) =>
+    reviews.some((review) => String(review.donationId) === String(donationId));
+  const hasReportedDonation = (donationId) =>
+    safetyReports.some(
+      (report) =>
+        String(report.donationId) === String(donationId) &&
+        String(report.ngoId) === String(session?.id),
+    );
+
+  const submitReview = (request) => {
+    const donation = request.donation;
+    const rating = Number(ratingDrafts[request.id]?.rating || 0);
+    const comment = (ratingDrafts[request.id]?.comment || "").trim();
+    if (!donation || donation.status !== "Picked Up") {
+      setFeedbackMessage(
+        "You can rate a provider only after the pickup is marked Picked Up.",
+      );
+      return;
+    }
+    if (hasReviewedDonation(donation.id)) {
+      setFeedbackMessage(
+        "This donation already has a review. Only one review is allowed per donation.",
+      );
+      return;
+    }
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      setFeedbackMessage("Please select a star rating from 1 to 5.");
+      return;
+    }
+    setReviews((current) => {
+      if (
+        current.some(
+          (review) => String(review.donationId) === String(donation.id),
+        )
+      )
+        return current;
+      return [
+        ...current,
+        {
+          id: `${donation.id}-${session.id}`,
+          donationId: donation.id,
+          providerId: donation.providerId,
+          providerName: donation.provider,
+          ngoId: session.id,
+          ngoName: session.name,
+          rating,
+          comment,
+          createdAt: new Date().toISOString(),
+        },
+      ];
+    });
+    setFeedbackMessage("Thank you — your provider review has been submitted.");
+  };
+
+  const submitSafetyReport = (request) => {
+    const donation = request.donation;
+    const concern = (safetyDrafts[request.id]?.concern || "").trim();
+    const details = (safetyDrafts[request.id]?.details || "").trim();
+    if (!donation || donation.status !== "Picked Up") {
+      setFeedbackMessage(
+        "Food safety reports can be submitted after the pickup is marked Picked Up.",
+      );
+      return;
+    }
+    if (!concern) {
+      setFeedbackMessage(
+        "Choose a freshness or hygiene concern before submitting.",
+      );
+      return;
+    }
+    if (hasReportedDonation(donation.id)) {
+      setFeedbackMessage(
+        "Your organization has already submitted a safety report for this donation.",
+      );
+      return;
+    }
+    setSafetyReports((current) => [
+      ...current,
+      {
+        id: `${donation.id}-${session.id}-${Date.now()}`,
+        donationId: donation.id,
+        donationName: donation.foodName,
+        providerId: donation.providerId,
+        providerName: donation.provider,
+        ngoId: session.id,
+        ngoName: session.name,
+        concern,
+        details,
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+    setFeedbackMessage(
+      "Safety concern submitted separately from the star rating.",
+    );
+  };
+
   // Cancel only this NGO's own pending request.
   const cancelRequest = (requestId) => {
     setRequests((currentRequests) =>
@@ -369,6 +313,39 @@ export default function NGODashboard() {
             Browse food
           </Link>
         </div>
+
+        {expiredRequests.length > 0 && (
+          <div className="error-box ngo-expiry-alert" role="alert">
+            <strong>
+              ⏰ {expiredRequests.length} requested donation
+              {expiredRequests.length === 1 ? " has" : "s have"} expired.
+            </strong>
+            <p>
+              {expiredRequests
+                .map(
+                  (request) =>
+                    request.donationName ||
+                    request.donation?.foodName ||
+                    "A donation",
+                )
+                .join(", ")}{" "}
+              — these pickup windows have passed. Please do not travel for
+              expired listings; browse current availability instead.
+            </p>
+          </div>
+        )}
+        {feedbackMessage && (
+          <div className="success-box ngo-feedback-message" role="status">
+            {feedbackMessage}
+            <button
+              type="button"
+              className="small-action"
+              onClick={() => setFeedbackMessage("")}
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         {/* Request tracker */}
         <div className="dashboard-panel request-panel">
@@ -460,8 +437,8 @@ export default function NGODashboard() {
                         · Requested {formattedDate}
                       </small>
 
-                      {request.donation?.location && (
-                        <small>📍 {request.donation.location}</small>
+                      {request.donation && (
+                        <DonationLocation donation={request.donation} />
                       )}
                     </div>
 
@@ -486,6 +463,161 @@ export default function NGODashboard() {
                         </button>
                       )}
                     </div>
+
+                    {request.displayStatus === "Expired" && (
+                      <div className="request-expiry-notice" role="alert">
+                        ⏰ This donation's pickup deadline has passed. This
+                        request is expired; please choose another listing.
+                      </div>
+                    )}
+
+                    {request.donation?.status === "Picked Up" && (
+                      <div className="ngo-review-panel">
+                        {hasReviewedDonation(request.donation.id) ? (
+                          <p className="muted-text">
+                            ✓ A review has already been submitted for this
+                            donation.
+                          </p>
+                        ) : (
+                          <form
+                            onSubmit={(event) => {
+                              event.preventDefault();
+                              submitReview(request);
+                            }}
+                          >
+                            <strong>Rate your pickup experience</strong>
+                            <p className="muted-text">
+                              Only available after pickup is confirmed. One
+                              review per donation.
+                            </p>
+                            <label className="form-field">
+                              <span>Provider rating *</span>
+                              <select
+                                required
+                                value={ratingDrafts[requestId]?.rating || ""}
+                                onChange={(event) =>
+                                  setRatingDrafts((current) => ({
+                                    ...current,
+                                    [requestId]: {
+                                      ...current[requestId],
+                                      rating: event.target.value,
+                                    },
+                                  }))
+                                }
+                              >
+                                <option value="">Choose stars</option>
+                                <option value="5">★★★★★ — Excellent</option>
+                                <option value="4">★★★★ — Good</option>
+                                <option value="3">★★★ — Okay</option>
+                                <option value="2">★★ — Poor</option>
+                                <option value="1">★ — Very poor</option>
+                              </select>
+                            </label>
+                            <label className="form-field">
+                              <span>Review (optional)</span>
+                              <textarea
+                                rows="2"
+                                maxLength="500"
+                                value={ratingDrafts[requestId]?.comment || ""}
+                                onChange={(event) =>
+                                  setRatingDrafts((current) => ({
+                                    ...current,
+                                    [requestId]: {
+                                      ...current[requestId],
+                                      comment: event.target.value,
+                                    },
+                                  }))
+                                }
+                                placeholder="Share a short note about the pickup..."
+                              />
+                            </label>
+                            <button
+                              className="button button-primary"
+                              type="submit"
+                            >
+                              Submit review
+                            </button>
+                          </form>
+                        )}
+
+                        <div className="ngo-safety-report">
+                          {hasReportedDonation(request.donation.id) ? (
+                            <p className="muted-text">
+                              ✓ Your organization has submitted a safety report
+                              for this donation.
+                            </p>
+                          ) : (
+                            <form
+                              onSubmit={(event) => {
+                                event.preventDefault();
+                                submitSafetyReport(request);
+                              }}
+                            >
+                              <br></br>
+                              <strong>Food safety concern?</strong>
+                              <p className="muted-text">
+                                Report freshness or hygiene issues separately. A
+                                star rating is not a safety report.
+                              </p>
+                              <label className="form-field">
+                                <span>Concern type *</span>
+                                <select
+                                  required
+                                  value={safetyDrafts[requestId]?.concern || ""}
+                                  onChange={(event) =>
+                                    setSafetyDrafts((current) => ({
+                                      ...current,
+                                      [requestId]: {
+                                        ...current[requestId],
+                                        concern: event.target.value,
+                                      },
+                                    }))
+                                  }
+                                >
+                                  <option value="">Choose concern</option>
+                                  <option value="Freshness">
+                                    Food freshness / spoilage concern
+                                  </option>
+                                  <option value="Hygiene">
+                                    Hygiene / contamination concern
+                                  </option>
+                                  <option value="Storage">
+                                    Unsafe storage / temperature concern
+                                  </option>
+                                  <option value="Other serious concern">
+                                    Other serious food-safety concern
+                                  </option>
+                                </select>
+                              </label>
+                              <label className="form-field">
+                                <span>Details (optional)</span>
+                                <textarea
+                                  rows="2"
+                                  maxLength="1000"
+                                  value={safetyDrafts[requestId]?.details || ""}
+                                  onChange={(event) =>
+                                    setSafetyDrafts((current) => ({
+                                      ...current,
+                                      [requestId]: {
+                                        ...current[requestId],
+                                        details: event.target.value,
+                                      },
+                                    }))
+                                  }
+                                  placeholder="Describe what you observed..."
+                                />
+                              </label>
+                              <button
+                                className="button button-secondary"
+                                type="submit"
+                              >
+                                Submit safety report
+                              </button>
+                            </form>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </article>
                 );
               })}

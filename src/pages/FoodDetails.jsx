@@ -84,15 +84,19 @@ export default function FoodDetails() {
 
   const expired =
     donation.status === "Expired" || isDeadlinePassed(donation.pickupDeadline);
-    const displayStatus =
-  donation.status === "Picked Up"
+  const isUnavailable =
+  expired ||
+  ["Claimed", "Picked Up"].includes(donation.status) ||
+  currentRequest?.status === "Accepted";
+  const displayStatus = expired
+  ? "Expired"
+  : donation.status === "Picked Up"
     ? "Picked Up"
     : donation.status === "Claimed" ||
         currentRequest?.status === "Accepted"
       ? "Claimed"
-      : expired
-        ? "Expired"
-        : "Available";
+      : "Available";
+
 
   const isOwnListing =
     session?.role === "provider" &&
@@ -162,7 +166,11 @@ export default function FoodDetails() {
           ← Back to available food
         </Link>
 
-        <div className="details-layout">
+        <div
+          className={`details-layout ${
+            isUnavailable ? "food-details-disabled" : ""
+          }`}
+        >
           <div className="food-details-image">
           <img
             src={getFoodImage(donation)}
