@@ -6,8 +6,10 @@ import Button from "./Button";
 import { useSessionContext } from "../context/SessionContext";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { STORAGE_KEYS } from "../utils/storage";
+import { useTheme } from "../context/ThemeContext";
 
 export default function Navbar() {
+  const { theme, changeTheme } = useTheme();
   const { session, logout } = useSessionContext();
   const [open, setOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -120,6 +122,7 @@ export default function Navbar() {
   }, [session?.id, session?.role]);
 
   return (
+    
     <header className="site-header">
       <div className="container nav-inner">
         <Logo />
@@ -163,6 +166,30 @@ export default function Navbar() {
           >
             Find Food
           </NavLink>
+<div className="theme-selector">
+  
+
+  <select
+    id="theme-select"
+    className="theme-select"
+    aria-label="Choose website theme"
+    value={theme}
+    onChange={(e) => changeTheme(e.target.value)}
+  >
+    <option value="nature">🌿 Nature</option>
+    <option value="ocean">🌊 Ocean</option>
+    <option value="blush">🌸 Blush</option>
+    <option value="lavender">💜 Lavender</option>
+    <option value="peach">🍑 Peach</option>
+    <option value="midnight">🌙 Midnight</option>
+  </select>
+</div>
+
+
+
+
+         
+   
 
           {(isProvider || isNgo) && (
             <div className="notification-wrapper">
